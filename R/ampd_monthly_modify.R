@@ -153,6 +153,12 @@ ampd_harvard %>% filter ( Year == 2004, Month == 8, Facility.ID..ORISPL. == 981,
 
 
 
+
+
+
+
+
+############
 ampd_all_harvard<- aggregate(list (NOx..tons.=ampd_harvard$NOx..tons., 
                            SO2..tons.=ampd_harvard$SO2..tons.,
                            CO2..short.tons.= ampd_harvard$CO2..short.tons.,
@@ -161,6 +167,8 @@ ampd_all_harvard<- aggregate(list (NOx..tons.=ampd_harvard$NOx..tons.,
                            Heat.Input..MMBtu.= ampd_harvard$Heat.Input..MMBtu.
 ), by=list( Year=ampd_harvard$Year,
             Month=ampd_harvard $Month), FUN=sum, na.rm=TRUE)
+
+
 
 #plotting 
 

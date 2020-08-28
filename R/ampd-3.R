@@ -21,6 +21,15 @@ setwd ("/Users/munshirasel/Google Drive/R/ampd-3")
 
 df <- read.fst ("data/emissions-raw.fst")
 
+#checked if there are any duplicated rows in the data
+df2<- df %>% distinct()
+
+rm(df2)
+
+
+
+head(df)
+
 #separating dates in different columns
 df<- df %>% 
   mutate(date = mdy(OP_DATE)) %>% 
@@ -49,7 +58,6 @@ head (df, 10)
 
 names(df)
 
-rm(df2)
 
 
 df_subset <- as.data.table (subset (df, select = c ("STATE",
@@ -93,6 +101,21 @@ dfx<- setDT(df_subset)[, .(SO2..tons. = sum(SO2..tons., na.rm=TRUE),
                            Steam.Load..1000lb. = sum(Steam.Load..1000lb., na.rm=TRUE),
                            HEAT.INPUT = sum(HEAT.INPUT, na.rm=TRUE)), 
                        by = .(STATE, FACILITY_NAME, ORISPL_CODE, UNITID, year, month)]
+
+# ampd_mon <- aggregate(list (                   SO2..tons.=df_subset$SO2..tons.,
+#                                                 NOx..tons. = df_subset$NOx..tons.,
+#                                                CO2..tons.= df_subset$CO2..tons.,
+#                             Avg.SO2.RATE = df_subset$SO2.RATE,
+#                             Avg.NOx.RATE = df_subset$NOx.RATE,
+#                             Avg.CO2.RATE = df_subset$CO2.RATE,
+#                             SUM_OP_TIME = df_subset$SUM_OP_TIME,
+#                                                Gross.Load..MW.h.=df_subset$Gross.Load..MW.h.,
+#                                                Steam.Load..1000lb.= df_subset$Steam.Load..1000lb.,
+#                                                Heat.Input..MMBtu.= df_subset$Heat.Input..MMBtu.),
+#                       by=list( STATE= df_subset$ State.x, year=df_subset$Year,
+#             month=df_subset $Month, ORISPL_CODE= df_subset$ORISPL_CODE,
+#             UNITID= df_subset$UNITID), FUN=sum, na.rm=TRUE)
+
 
 
 
