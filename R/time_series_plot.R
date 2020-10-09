@@ -1,6 +1,12 @@
-#time series plot of AMPD data
+#time series plot of AMPD data 
+#AMPD data were collected from EPA FTP site
 
-install.packages("ggpubr")
+
+# 
+# install.packages("mapproj")
+# 
+# install.packages("ggpubr")
+# install.packages("fiftystater")
 
 library(ncdf4)
 library(data.table)
@@ -21,42 +27,40 @@ library(plyr)
 library(RCurl)
 library(lubridate)
 library(ggpubr)
+library(mapproj)
 
 setwd ("/Users/munshirasel/Google Drive/R/ampd-3")
 
 
 ampd_raw <- read.fst ("data/ampd_raw.fst")
 
-ampd_harvard <- fread ("data/AMPD_Unit_with_Sulfur_Content_and_Regulations_with_Facility_Attributes.csv")
 
-names(ampd_harvard)
-ampd_harvard<- as.data.table (ampd_harvard)
-ampd_harvard <- ampd_harvard [ , V1 := NULL] 
+#Glossary of ampd data
+# glossary <- read.csv("data/datadefinition_09-01-2020_170204640.csv")
 
-# ampd <- as.data.table( ampd_raw %>% filter (year == 2015 :2020, month == 1:6))
-
-# str(ampd)
-
-# half.year.emission<- setDT(ampd)[, .(SO2..tons. = sum(SO2..tons., na.rm=TRUE),
-#                            NOx..tons. = sum(NOx..tons., na.rm=TRUE),
-#                            CO2..tons. = sum(CO2..tons., na.rm=TRUE),
-#                            SUM_OP_TIME = sum(SUM_OP_TIME, na.rm=TRUE),
-#                            Gross.Load..MW.h. = sum(Gross.Load..MW.h., na.rm=TRUE),
-#                            Steam.Load..1000lb. = sum(Steam.Load..1000lb., na.rm=TRUE),
-#                            HEAT.INPUT = sum(HEAT.INPUT, na.rm=TRUE)), 
-#                        by = .(STATE, year, month)]
-# 
-# half.year.emission %>% filter ( STATE=="VA")
-# 
-# states <- c("CA","VA", "FL")
-# 
-# half.year.emission %>% as_tibble()
-
+# Facility ID (ORISPL)	The unique six-digit facility identification number, also called an ORISPL, assigned by the Energy Information Administration.
+# Unit ID	Unique identifier for each unit at a facility.
+# Unit	A fossil fuel-fired combustion device.
+# SO2 (tons)	Sulfur dioxide emissions in short tons.
+# SO2 Phase	Title IV of the Clean Air Act SO2 Phase. Phase I started in 1995; Phase II started in 2000.
+# Steam Load (1000lb)	Total steam pressure produced by a unit or source in any calendar year (or other specified time period) produced by combusting a given heat input of fuel.
+# SO2 Control(s)	Method or equipment used by the combustion unit to minimize production or emission of sulfur dioxide (SO2).
+# PM Control(s)	Method or equipment used by the combustion unit to minimize production or emission of particulate matter (PM).
+# Operating Time	Any part of an hour in which a unit combusts any fuel.
+# Operating Status	An indication of the present condition of a unit (planned, operating, shutdown, etc.).
+# NOx Phase	Group 1 boilers are divided into two mutually exclusive groups: Phase I and Phase II. The Phase a Group 1 boiler is associated with determines (in part) the Acid Rain NOx limit a boiler is subject to. There is no Phase I-Phase II bifurcation of Group 2 boilers.
+# NOx (tons)	Nitrogen oxide emissions in short tons.
+# NOx Control(s)	Method or equipment used by the combustion unit to minimize production or emission of nitrogen oxides (NOx).
+# Max Hourly HI Rate (MMBtu/hr)	The design heat input capacity (in MMBtu/hr) for the unit or the highest hourly heat input rate observed in the past five years, whichever is greater.
+# Hg Control(s)	Method or equipment used by the combustion unit to minimize production or emission of mercury (Hg).
+# Heat Input (MMBtu)	The measure of utilization that is calculated by multiplying the quantity of fuel by the fuels heat content.
+# Gross Load (MW-h)	Total electrical generation of a unit or source in any calendar year (or other specified time period) produced by combusting a given heat input of fuel.
+# Fuel Type (Primary)	The primary type of fuel combusted by the unit.
+# Fuel Type (Secondary)	The secondary type of fuel combusted by the unit.
 
 
-# dfz<- ampd %>% group_by(month, year, STATE) %>% summarise_all(sum)
 
-# names(ampd_raw)
+
 
 #sorting AMPD data by state, year and month
 
@@ -65,7 +69,8 @@ ampd_sym<-            aggregate(list (NOx..tons.=ampd_raw$NOx..tons.,
                       CO2..tons.= ampd_raw$CO2..tons.,
                       Gross.Load..MW.h.=ampd_raw$Gross.Load..MW.h.,
                       Steam.Load..1000lb.= ampd_raw$Steam.Load..1000lb.,
-                      HEAT.INPUT= ampd_raw$HEAT.INPUT
+                      HEAT.INPUT= ampd_raw$HEAT.INPUT,
+                      SUM_OP_TIME= ampd_raw$SUM_OP_TIME
                       ), by=list(STATE=ampd_raw $ STATE, year=ampd_raw$year,
                                  month=ampd_raw $month), FUN=sum)
 
@@ -77,212 +82,15 @@ ampd_ym<- aggregate(list (NOx..tons.=ampd_raw$NOx..tons.,
                       CO2..tons.= ampd_raw$CO2..tons.,
                       Gross.Load..MW.h.=ampd_raw$Gross.Load..MW.h.,
                       Steam.Load..1000lb.= ampd_raw$Steam.Load..1000lb.,
-                      HEAT.INPUT= ampd_raw$HEAT.INPUT
+                      HEAT.INPUT= ampd_raw$HEAT.INPUT,
+                      SUM_OP_TIME= ampd_raw$SUM_OP_TIME
 ), by=list( year=ampd_raw$year,
            month=ampd_raw $month), FUN=sum)
 
-names(ampd_harvard_sym)
+# names(ampd_harvard_sym)
 names(ampd_sym)
 
-#Changing column names of ampd_harvard data to match  column names of  ampd_raw data
 
-
-
-
-
-
-
-ampd_harvard_sym<- aggregate(list (NOx..tons.=ampd_harvard$NOx..tons., 
-                                   SO2..tons.=ampd_harvard$SO2..tons.,
-                                   CO2..short.tons.= ampd_harvard$CO2..short.tons.,
-                                   Gross.Load..MW.h.=ampd_harvard$Gross.Load..MW.h.,
-                                   Steam.Load..1000lb.= ampd_harvard$Steam.Load..1000lb.,
-                                   Heat.Input..MMBtu.= ampd_harvard$Heat.Input..MMBtu.
-), by=list( State= ampd_harvard$ State.x, Year=ampd_harvard$Year,
-            Month=ampd_harvard $Month), FUN=sum, na.rm=TRUE)
-
-
-colnames(ampd_harvard_sym)[1] <- "STATE"
-
-colnames(ampd_harvard_sym)[2] <- "year"
-
-colnames(ampd_harvard_sym)[3] <- "month"
-
-colnames(ampd_harvard_sym)[4] <- "NOx..tons."
-
-colnames(ampd_harvard_sym)[5] <- "SO2..tons."
-
-colnames(ampd_harvard_sym)[6] <- "CO2..tons."
-
-colnames(ampd_harvard_sym)[7] <- "Gross.Load..MW.h."
-
-colnames(ampd_harvard_sym)[8] <- "Steam.Load..1000lb."
-
-colnames(ampd_harvard_sym)[9] <- "HEAT.INPUT"
-
-
-
-ampd_harvard_ym<- aggregate(list (NOx..tons.=ampd_harvard$NOx..tons., 
-                                   SO2..tons.=ampd_harvard$SO2..tons.,
-                                   CO2..short.tons.= ampd_harvard$CO2..short.tons.,
-                                   Gross.Load..MW.h.=ampd_harvard$Gross.Load..MW.h.,
-                                   Steam.Load..1000lb.= ampd_harvard$Steam.Load..1000lb.,
-                                   Heat.Input..MMBtu.= ampd_harvard$Heat.Input..MMBtu.
-), by=list(  Year=ampd_harvard$Year,
-            Month=ampd_harvard $Month), FUN=sum, na.rm=TRUE)
-
-
-names(ampd_harvard_ym)
-
-
-
-colnames(ampd_harvard_ym)[1] <- "year"
-
-colnames(ampd_harvard_ym)[2] <- "month"
-
-colnames(ampd_harvard_ym)[3] <- "NOx..tons."
-
-colnames(ampd_harvard_ym)[4] <- "SO2..tons."
-
-colnames(ampd_harvard_ym)[5] <- "CO2..tons."
-
-colnames(ampd_harvard_ym)[6] <- "Gross.Load..MW.h."
-
-colnames(ampd_harvard_ym)[7] <- "Steam.Load..1000lb."
-
-colnames(ampd_harvard_ym)[8] <- "HEAT.INPUT"
-
-
-
-
-
-#combining two plot for data validation
-
-#yearly NOx emission in the US
-
-x <- ampd_ym %>% filter ( year <= 2015)
-y <- ampd_harvard_ym  %>% filter (year <= 2015)
-
-ggplot() + geom_boxplot(data= x, aes( year, NOx..tons.,color= year, group= year)) + 
-  geom_boxplot(data= y, aes( year, NOx..tons.,color= year, group= year)) +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2))  
-
-
-#yearly SO2 emission in the US
-
-names(ampd_ym)
-x <- ampd_ym %>% filter ( year <= 2015)
-y <- ampd_harvard_ym  %>% filter (year <= 2015)
-
-
-ggplot() + geom_boxplot(data= x, aes( year, SO2..tons.,color= year, group= year)) + 
-  geom_boxplot(data= y, aes( year, SO2..tons.,color= year, group= year)) +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2))  
-
-
-x <- ampd_ym %>% filter ( year <= 2015)
-y <- ampd_harvard_ym  %>% filter (year <= 2015)
-
-
-ggplot() + geom_boxplot(data= x, aes( year, CO2..tons.,color= year, group= year)) + 
-  geom_boxplot(data= y, aes( year, CO2..tons.,color= year, group= year)) +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) 
-
-
-
-
-# plotting year wise emission in two graphs and then combined together
-
-# NOx emission
-
-plot1<- ampd_ym%>% filter (year <= 2015) %>%
-  ggplot(aes( year, NOx..tons., group= year)) + geom_boxplot(aes(fill=year)) +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
-                                                              y = "NOx Emission (tons)",
-                                                              title = "NOx Emission_updated data") 
-
-plot2 <- ampd_harvard_ym%>% filter (year <= 2015) %>%
-  ggplot(aes( year, NOx..tons., group= year)) + geom_boxplot(aes(fill=year)) +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
-                                                            y = "NOx Emission (tons)",
-                                                            title = "NOx Emission_Harvard data")
-
-ggarrange (plot1, plot2, labels= c("A", "B"), ncol=1, nrow=2)
-
-
-#SO2 emission
-plot1<- ampd_ym%>% filter (year <= 2015) %>%
-  ggplot(aes( year, SO2..tons., group= year)) + geom_boxplot(aes(fill=year)) +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
-                                                              y = "SO2 Emission (tons)",
-                                                              title = "SO2 Emission_updated data") 
-
-plot2 <- ampd_harvard_ym%>% filter (year <= 2015) %>%
-  ggplot(aes( year, SO2..tons., group= year)) + geom_boxplot(aes(fill=year)) +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
-                                                              y = "SO2 Emission (tons)",
-                                                              title = "SO2 Emission_Harvard data")
-
-ggarrange (plot1, plot2, labels= c("A", "B"), ncol=1, nrow=2)
-
-
-
-# Few notes:
-
-  # 1. 1995, 1977 We shouldn't consider because the AMPD website doesn't have the data from all States
-#2. Harvard data of 2015 is not right since it doesn't has data from June to December of 2015(see the plot below)
-
-years<- c ( 2015)
-
-
-plot1<- ampd_ym %>% filter ( year %in% years) %>% ggplot(aes(month, NOx..tons., color= year, group= year)) +
-  geom_path() + geom_line() + scale_x_continuous(breaks = seq(1, 12, by = 1)) + 
-  labs(x= "month",  y = "NOx Emission (tons)", title = "NOx Emission_updated data") +
-  ylim (0, 300000)
-
-plot2 <- ampd_harvard_ym  %>% filter ( year %in% years)%>% ggplot(aes(month, NOx..tons., color= year, group= year)) +
-  geom_path() + geom_line() + scale_x_continuous(breaks = seq(1, 12, by = 1)) + 
-  labs(x= "month",  y = "NOx Emission (tons)", title = "NOx Emission_Harvard data") +
-  ylim (0, 300000)
-
-ggarrange (plot1, plot2, labels= c("A", "B"), ncol=1, nrow=2)
-
-
-
-# where is NOx harvard data for months >6?
-
-ampd_harvard_ym  %>% filter ( year==2015) 
-
-# it seems they don't have data from July to december of 2015
-
-
-
-
-#Combining two plots to see year wise difference
-
-# not sure how to use facet wrap command for two different dataframes and how to color different lines
-
-#which one is which?
-
-# 2006, 2007 and from 1997 to 2000 the match is good
-
-years<- c ( 2001)
-
-x <- ampd_ym %>% filter ( year %in% years)
-y <- ampd_harvard_ym  %>% filter ( year %in% years)
-
-ggplot() + geom_point(data= x, aes( month, NOx..tons.,color= year, group= year)) + 
-  geom_line( data= x, aes( month, NOx..tons.,color= year, group= year )) + 
-  geom_point (data=y, aes( month, NOx..tons. ,color= year, group= year)) +
-  geom_line( data= y, aes( month, NOx..tons.,color= year, group= year)) + 
-  scale_x_continuous(breaks = seq(1, 12, by = 1)) + 
-  labs(x= "Year",  y = "NOx Emission (tons)", title = "NOx Emission data")
-
-
-
-# From this point onward I'll just used my updated AMPD data until 2020 
-# just to mention 2020 data is upto June, 2020 as of August-23-2020
-#later I'll update the data when data will be available in the AMPD website
 
 #Yearly NOx emission:
 names(ampd_ym)
@@ -330,14 +138,7 @@ plot5
 plot6
 
 
-plot7 <- ampd_harvard_ym  %>% filter ( year <= 2015)%>% ggplot(aes( year, Steam.Load..1000lb., group= year)) + geom_boxplot(aes(fill=year)) +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
-                                                              y = "Steam Load",
-                                                              title = "Steam Load (~2020June) Harvard data")
 
-plot7
-
-ggarrange (plot6, plot7, labels= c("A", "B"), ncol=1, nrow=2)
 
 
 # Random Plot
@@ -349,7 +150,7 @@ ampd_ym %>%
   ggplot(aes( Gross.Load..MW.h., NOx..tons., color= year)) + geom_point()
 
 ampd_ym %>%
-  ggplot(aes( Steam.Load..1000lb., NOx..tons., color= year)) + geom_point() +geom_smooth()
+  ggplot(aes( Steam.Load..1000lb., NOx..tons., color= year)) + geom_point() +geom_smooth(aes(color=year))
 
 ampd_ym %>%
   ggplot(aes( HEAT.INPUT, SO2..tons., color= year)) + geom_point()
@@ -409,248 +210,402 @@ ggarrange(plot1, plot2, plot3, plot4, labels = c ("A", "B", "C", "D"), nrow=4, n
 
 # NOx emission 
 
-states <- c ("GA", "TX", "VA",  "PA")
+states <- c ("GA", "TX", "FL",  "PA")
 
 plot1<- ampd_sym %>% filter(STATE %in% states, year == 2020) %>%
   ggplot(aes(month, NOx..tons., color= STATE, group= STATE)) +
   geom_point() + geom_line()+ labs(x= "Month", 
                                    y = "NOx Emission (tons)",
-                                   title = "") +
+                                   title = "2020") +
   scale_x_continuous(breaks = seq(0, 12, by = 1)) 
 
 plot1
 
-#################### next ???###############
 
 
 
-
-
-
-
-
-
-
-
-
-
-# plot2<- ampd_harvard_sym %>% filter(STATE %in% states, year == 2014) %>%
-#   ggplot(aes(month, NOx..tons., color= STATE, group= STATE)) +
-#   geom_point() + geom_line()+ labs(x= "Month", 
-#                                    y = "NOx Emission (tons)",
-#                                    title = "") +
-#   scale_x_continuous(breaks = seq(0, 12, by = 1))  + ylim (0, 20000)
-# 
-# ggarrange (plot1, plot2, labels= c ("A", "B"), nrow=2, ncol=1)
-
-#texas not matching with harvard data
 
 
 
 #looking into emissions (year variable, state fixed)
 
-years <- c (2017, 2018, 2019, 2020)
+years <- c ( 2019, 2020)
 
-ampd_sym %>% filter(year %in% years, STATE == "TX") %>%
+ampd_sym %>% filter(year %in% years, STATE == "NY") %>%
   ggplot(aes(month, NOx..tons., color= year, group= year)) +
   geom_point() + geom_line()+ labs(x= "Month", 
                                    y = "NOx Emission (tons)",
                                    title = "") +
-  scale_x_continuous(breaks = seq(0, 12, by = 1))  + ylim (0, 20000)
+  scale_x_continuous(breaks = seq(0, 12, by = 1))  + ylim (0, 1500)
 
 
-ampd_sym %>% filter(year %in% years, STATE == "TX") %>%
+ampd_sym %>% filter(year %in% years, STATE == "NY") %>%
   ggplot(aes(month, SO2..tons., color= year, group= year)) +
   geom_point() + geom_line()+ labs(x= "Month", 
                                    y = "SO2 Emission (tons)",
-                                   title = "") +
-  scale_x_continuous(breaks = seq(0, 12, by = 1))  + ylim (0, 30000)
+                                   title = "Texas") +
+  scale_x_continuous(breaks = seq(0, 12, by = 1))  + ylim (0, 40000)
 
 
-
-# years <- c (2011, 2012, 2013)
-# 
-# ampd_harvard_sym %>% filter(Year %in% years, State == "WV") %>%
-#   ggplot(aes(Month, SO2..tons., color= Year, group= Year)) +
-#   geom_point() + geom_line()+ labs(x= "Month", 
-#                                    y = "SO2 Emission (tons)",
-#                                    title = "") +
-#   scale_x_continuous(breaks = seq(0, 12, by = 1))  + ylim (0, 25000)
-# 
-# ampd_sym %>% filter(year %in% years, STATE == "WV") %>%
-#   ggplot(aes(month, SO2..tons., color= year, group= year)) +
-#   geom_point() + geom_line()+ labs(x= "Month", 
-#                                    y = "SO2 Emission (tons)",
-#                                    title = "") +
-#   scale_x_continuous(breaks = seq(0, 12, by = 1))  + ylim (0, 25000)
+ampd_sym %>% filter(year %in% years, STATE == "TX", month==7)
 
 
 
 
 
 
-
-
-
-# ampd_harvard_sym %>% filter(Year %in% years, State == "TX") %>%
-#   ggplot(aes(Month, NOx..tons., color= Year, group= Year)) +
-#   geom_point() + geom_line()+ labs(x= "Month", 
-#                                    y = "NOx Emission (tons)",
-#                                    title = "") +
-#   scale_x_continuous(breaks = seq(0, 12, by = 1))  + ylim (0, 20000)
-
-###########
-
-
-# states <- c ("TX", "VA", "FL")
-# 
-# ampd_6 %>% filter(STATE %in% states, year == 2020 ) %>%
-#   ggplot(aes(month, NOx..tons., group = STATE, color= STATE)) + 
-#   geom_line()+ geom_point() + labs(x= "Month", 
-#                                    y = "NOx Emission (tons)",
-#                                    title = "Emission") +
-#   scale_x_continuous(breaks = seq(0, 12, by = 1))
-
-
-
-#heat input
-
-# states <- c ("TX")
-# 
-# ampd_6 %>% filter(STATE %in% states, year == 2020 ) %>%
-#   ggplot(aes(month, HEAT.INPUT, group = STATE, color= STATE)) + 
-#   geom_line()+ geom_point() + labs(x= "Month", 
-#                                    y = "HEAT.INPUT",
-#                                    title = "Emission") +
-#   scale_x_continuous(breaks = seq(0, 12, by = 1))
-
-
-
-
-
-
-years<- c (2010, 2011, 2012)
-ampd_harvard_ym %>% filter( year %in% years) %>%
-  ggplot(aes(month, NOx..tons., color= year, group= year )) +
-  geom_point() + geom_line(aes())+ labs(x= "Month", 
-                                        y = "NOx Emission (tons)",
-                                        title = "NOx Emission  ") +
-  scale_x_continuous(breaks = seq(0, 12, by = 1)) 
-
-
-
-
-
-
-
-
+#monthly SO2 emission year wise
 
 ampd_ym %>% filter( year >= 2018) %>%
   ggplot(aes(month, SO2..tons., color= year, group= year, )) +
   geom_point() + geom_line(aes())+ labs(x= "Month", 
                                         y = "SO2 Emission (tons)",
-                                        title = "Emission O2 Emission from 2018 to 2020") +
+                                        title = "Emission SO2 Emission from 2018 to 2020") +
+  scale_x_continuous(breaks = seq(0, 12, by = 1)) 
+
+
+#monthly NOx emission year wise
+
+ampd_ym %>% filter( year >= 2018) %>%
+  ggplot(aes(month, NOx..tons., color= year, group= year, )) +
+  geom_point() + geom_line(aes())+ labs(x= "Month", 
+                                        y = "SO2 Emission (tons)",
+                                        title = "Emission SO2 Emission from 2018 to 2020") +
   scale_x_continuous(breaks = seq(0, 12, by = 1)) 
 
 
 
-
-
-
-#NOX and SO2 emission year wise
-
-ampd_ym %>% filter (year >= 1995) %>%
-  ggplot(aes(year, NOx..tons., group= year)) + geom_boxplot()+ labs(x= "Year", 
-                                        y = "NOx Emission (tons)",
-                                        title = "NOx Emission Emission 1995 to 2020") +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2))
-
-
-ampd_harvard_ym %>% filter( year >= 1995) %>%
-  ggplot(aes(year, NOx..tons., group= year )) +geom_boxplot() + labs(x= "Month", 
-                                        y = "NOx Emission (tons)",
-                                        title = "NOx Emission Emission ") +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) 
+#fuelt types
 
 
 
 
+coal <- ampd_raw %>% filter (Fuel.Type..Primary.== "Coal")
 
 
 
 
+coal_ampd_ym <-  aggregate(list (NOx..tons.=coal$NOx..tons., 
+                                 SO2..tons.=coal$SO2..tons.,
+                                 CO2..tons.= coal$CO2..tons.,
+                                 Gross.Load..MW.h.=coal$Gross.Load..MW.h.,
+                                 Steam.Load..1000lb.= coal$Steam.Load..1000lb.,
+                                 HEAT.INPUT= coal$HEAT.INPUT
+), by=list( year=coal$year,
+            month=coal$month), FUN=sum)
 
 
-#SO2
+coal_ampd_sym <- aggregate(list (NOx..tons.=coal$NOx..tons., 
+                                 SO2..tons.=coal$SO2..tons.,
+                                 CO2..tons.= coal$CO2..tons.,
+                                 Gross.Load..MW.h.=coal$Gross.Load..MW.h.,
+                                 Steam.Load..1000lb.= coal$Steam.Load..1000lb.,
+                                 HEAT.INPUT= coal$HEAT.INPUT
+), by=list(STATE=coal $ STATE,  year=coal$year,
+            month=coal$month), FUN=sum)
 
 
-ampd_ym %>% filter (year >= 1995) %>%
-  ggplot(aes(year, SO2..tons., group= year)) + geom_boxplot()+ labs(x= "Year", 
-                                                                    y = "SO2 Emission (tons)",
-                                                                    title = "SO2 Emission 1995 to 2020") +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2))
+  
+  
+  
 
-ampd_ym %>% filter (year <= 2015) %>%
-  ggplot(aes(year, SO2..tons., group= year)) + geom_boxplot()+ labs(x= "Year", 
-                                                                    y = "SO2 Emission (tons)",
-                                                                    title = "SO2 Emission 1995 to 2020") +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2))
+pipe.nat.gas <- ampd_raw %>% filter (Fuel.Type..Primary.== "Pipeline Natural Gas")
 
+png_ampd_ym <-  aggregate(list (NOx..tons.=pipe.nat.gas$NOx..tons., 
+                                 SO2..tons.=pipe.nat.gas$SO2..tons.,
+                                 CO2..tons.= pipe.nat.gas$CO2..tons.,
+                                 Gross.Load..MW.h.=pipe.nat.gas$Gross.Load..MW.h.,
+                                 Steam.Load..1000lb.= pipe.nat.gas$Steam.Load..1000lb.,
+                                 HEAT.INPUT= pipe.nat.gas$HEAT.INPUT
+), by=list( year=pipe.nat.gas$year,
+            month=pipe.nat.gas$month), FUN=sum)
 
-#check
-ampd_harvard_ym %>% filter( Year >= 1995) %>%
-  ggplot(aes(Year, SO2..tons., group= Year )) +geom_boxplot() + labs(x= "Month", 
-                                                                     y = "SO2 Emission (tons)",
-                                                                     title = "SO2 Emission Emission ") +
-  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) 
+png_ampd_sym <-  aggregate(list (NOx..tons.=pipe.nat.gas$NOx..tons., 
+                                SO2..tons.=pipe.nat.gas$SO2..tons.,
+                                CO2..tons.= pipe.nat.gas$CO2..tons.,
+                                Gross.Load..MW.h.=pipe.nat.gas$Gross.Load..MW.h.,
+                                Steam.Load..1000lb.= pipe.nat.gas$Steam.Load..1000lb.,
+                                HEAT.INPUT= pipe.nat.gas$HEAT.INPUT
+), by=list( STATE=pipe.nat.gas$STATE, year=pipe.nat.gas$year,
+            month=pipe.nat.gas$month), FUN=sum)
 
-
-#looking into emissions (state variable, year fixed)
-
-
-#combining two plots (Harvard_AMPD data + My AMPD data to compare)
-
-
+ 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#coal and pipleline natural gas boxplot year wise 
 
 
 
+plot1 <-  coal_ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year, NOx..tons., group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs( x= "Year", y= " NOx Emission (tons)",
+                                                               title= "Primary Fuel is Coal")  
+
+plot2 <- png_ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year, NOx..tons., group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2))  +labs( x= "Year", y= " NOx Emission (tons)",
+                                                               title= "Primary Fuel is Pipeline natural gas")  
+
+ggarrange (plot1, plot2, labels= c("A", "B"), ncol=1, nrow=2)
 
 
-dfz %>% filter (STATE== "VA", month <= 6, year>= 2018)
+#S02
+
+plot1 <-  coal_ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year, SO2..tons., group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs( x= "Year", y= " SO2 Emission (tons)",
+                                                               title= "Primary Fuel is Coal")  
+
+plot2 <- png_ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year, SO2..tons., group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2))  +labs( x= "Year", y= " SO2 Emission (tons)",
+                                                               title= "Primary Fuel is Pipeline natural gas")  
+
+ggarrange (plot1, plot2, labels= c("A", "B"), ncol=1, nrow=2)
+
+#CO2
+
+plot1 <-  coal_ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year, CO2..tons., group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs( x= "Year", y= " CO2 Emission (tons)",
+                                                               title= "Primary Fuel is Coal")  
+
+plot2 <- png_ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year, CO2..tons., group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2))  +labs( x= "Year", y= " CO2 Emission (tons)",
+                                                               title= "Primary Fuel is Pipeline natural gas")  
+
+ggarrange (plot1, plot2, labels= c("A", "B"), ncol=1, nrow=2)
 
 
-ampd %>% group_by(month, year, STATE) 
 
+#Sum op time
+ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year, SUM_OP_TIME, group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs( x= "Year", y= " Operation time (hours)",
+                                                               title= "Operating time")  
 
+#Gross Load
 
-TX_county<- ampd_raw %>% filter (STATE=="TX") %>% select (County)
-names (TX_county)
+ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year,Gross.Load..MW.h., group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs( x= "Year", y= " Gross load (MW-hr)",
+                                                               title= "Gross Load MW-hr")  
 
-TX_county %>% unique(County)
-as.character(unique(unlist(TX_county)))
+#Steam Load
 
-# https://eaglefordshale.com/counties
+ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year,Steam.Load..1000lb., group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs( x= "Year", y= " Steam.Load..1000lb.",
+                                                               title= "Steam.Load..1000lb.")  
 
-ampd_raw %>% filter (STATE=="TX", County == "Milam County")
+#Heat Input
 
-
+ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year,HEAT.INPUT, group=year)) + geom_boxplot() +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs( x= "Year", y= " HEAT.INPUT",
+                                                               title= "HEAT.INPUT")  
        
+
+
+
+
+fuel <-  c ("Coal", "Pipeline Natural Gas")
+coal.natgas <-  ampd_raw %>% filter (Fuel.Type..Primary. %in% fuel)
+
+coal.natgas_ym <-  aggregate(list (NOx..tons.=coal.natgas $NOx..tons., 
+                SO2..tons.=coal.natgas $SO2..tons.
+     
+), by=list(  Fuel.Type..Primary.= coal.natgas$ Fuel.Type..Primary., year=coal.natgas $year), FUN=sum)
+
+
+
+coal.natgas_ym %>%
+  ggplot() + geom_line(aes(year, NOx..tons., color= Fuel.Type..Primary.)) +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2))  
+
+coal.natgas_ym %>%
+  ggplot() + geom_line(aes(year, SO2..tons., color= Fuel.Type..Primary.)) +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2))  
+
+
+
+# ================================================
+#CO2
+ampd_ym%>% filter (year <= 2020) %>%
+  ggplot(aes( year, CO2..tons., group= year)) + geom_boxplot(aes(fill=year)) +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
+                                                              y = "CO2 Emission (tons)",
+                                                              title = "CO2 Emission (~2020June)")
+
+#Heat Input
+ampd_ym %>% filter ( year <= 2020) %>%
+  ggplot(aes(year,HEAT.INPUT, group=year)) + geom_boxplot(aes(fill=year)) +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs( x= "Year", y= " HEAT.INPUT (MMBtu)",
+                                                               title= "HEAT.INPUT")  
+
+
+
+#Normalizing data with respect to heat and CO2
+
+
+
+ampd_sym <-  drop_na(  mutate (ampd_sym, NOx.to.Heat = NOx..tons./ HEAT.INPUT, 
+                     NOx.to.CO2 = NOx..tons./ CO2..tons.,
+                     SO2.to.Heat = SO2..tons./ HEAT.INPUT ,
+                     SO2.to.CO2 = SO2..tons./ CO2..tons. )) #per million
+
+ampd_ym <-  drop_na(mutate (ampd_ym, NOx.to.Heat = NOx..tons./ HEAT.INPUT, 
+                     NOx.to.CO2 = NOx..tons./ CO2..tons. ,
+                     SO2.to.Heat = SO2..tons./ HEAT.INPUT ,
+                     SO2.to.CO2 = SO2..tons./ CO2..tons. ) )
+
+
+
+
+
+#boxplot year wise of normalized data
+
+#NOx
+
+plot1<- ampd_ym%>% filter (year <= 2020) %>%
+  ggplot(aes( year, NOx.to.Heat, group= year)) + geom_boxplot(aes(fill=year)) +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
+                                                              y = "NOx Emission/Heat Input (tons/MMBtu)",
+                                                              title = "NOx Emission/Heat Input (tons/MMBtu) (~2020June)")
+
+plot2 <- ampd_ym%>% filter (year <= 2020) %>%
+  ggplot(aes( year, NOx.to.CO2, group= year)) + geom_boxplot(aes(fill=year)) +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
+                                                              y = "NOx.to.CO2 Emission (tons/tons)",
+                                                              title = "NOx/CO2 Emission (tons/tons) (~2020June)") 
+
+
+#SO2, year wise emission of Normalized data (Heat/CO2)
+
+
+plot3<- ampd_ym%>% filter (year <= 2020) %>%
+  ggplot(aes( year, SO2.to.Heat, group= year)) + geom_boxplot(aes(fill=year)) +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
+                                                              y = "SO2 Emission/Heat Input (tons/MMBtu)",
+                                                              title = "SO2 Emission/Heat Input (tons/MMBtu) (~2020June)")
+
+plot4 <- ampd_ym%>% filter (year <= 2020) %>%
+  ggplot(aes( year, SO2.to.CO2, group= year)) + geom_boxplot(aes(fill=year)) +
+  scale_x_continuous(breaks = seq(1995, 2021, by = 2)) + labs(x= "Year", 
+                                                              y = "SO2/CO2 Emission (tons/tons)",
+                                                              title = "SO2/CO2 Emission (tons/tons) (~2020June)")
+
+
+
+ggarrange (plot1, plot3, labels= c("A", "B"), ncol=1, nrow=2)
+ggarrange (plot2, plot4, labels= c("A", "B"), ncol=1, nrow=2)
+
+
+
+
+# load the map data
+states = map_data("state")
+str(states)
+
+## MAKE THE PLOT ####
+
+library(fiftystater)
+data("fifty_states")
+library(dslabs)
+data(murders)
+state.abb <- murders %>% select (state, abb) 
+colnames(state.abb)[2] <- "STATE"
+
+ampd_sym <-  merge(ampd_sym, state.abb, by="STATE", all.x=T)
+
+ampd_sym$state.lower <-  tolower(ampd_sym$state)
+
+
+
+# NOx over Heat
+years <-  c (2017)
+ampd_sym %>% filter (year %in% years) %>% ggplot( aes(map_id = state.lower)) + 
+  # map points to the fifty_states shape data
+  geom_map(aes(fill = NOx.to.Heat), map = fifty_states) + 
+  expand_limits(x = fifty_states$long, y = fifty_states$lat) +
+  coord_map() +
+  scale_x_continuous(breaks = NULL) + 
+  scale_y_continuous(breaks = NULL) +
+  labs(x = "NOx Emission/Heat Input (tons/MMBtu)", y = "") +
+  theme(legend.position = "bottom", 
+        panel.background = element_blank()) +   facet_grid(.~ year)
+
+
+#SO2 over Heat input
+
+years <-  c (2019)
+ampd_sym %>% filter (year %in% years) %>% ggplot( aes(map_id = state.lower)) + 
+  # map points to the fifty_states shape data
+  geom_map(aes(fill = SO2.to.Heat), map = fifty_states) + 
+  expand_limits(x = fifty_states$long, y = fifty_states$lat) +
+  coord_map() +
+  scale_x_continuous(breaks = NULL) + 
+  scale_y_continuous(breaks = NULL) +
+  labs(x = "SO2/Heat Input (tons/MMBtu)", y = "") +
+  theme(legend.position = "bottom", 
+        panel.background = element_blank()) +   facet_grid(.~ year) 
+
+
+
+#Comparing NOx emission vs. month state wise
+#########################
+
+# NOx emission 
+
+states <- c ("TX", "UT", "NM",  "PA")
+
+plot1<- ampd_sym %>% filter( STATE %in% states, year == 2020) %>% 
+  ggplot(aes(month, NOx.to.Heat, color= STATE, group= STATE)) +
+  geom_point() + geom_line()+ labs(x= "Month", 
+                                   y = "NOx Emission/Heat Input (tons/MMBtu)",
+                                   title = "2020") +
+  scale_x_continuous(breaks = seq(0, 12, by = 1)) 
+
+plot1
+
+states <- c ("TX", "UT", "NM",  "PA")
+
+plot2<- ampd_sym %>% filter( STATE %in% states, year == 2020) %>% 
+  ggplot(aes(month, SO2.to.Heat, color= STATE, group= STATE)) +
+  geom_point() + geom_line()+ labs(x= "Month", 
+                                   y = "SO2 Emission/Heat Input (tons/MMBtu)",
+                                   title = "2020") +
+  scale_x_continuous(breaks = seq(0, 12, by = 1)) 
+
+plot2
+
+
+
+#looking into emissions (year variable, state fixed)
+
+years <- c (2008, 2011, 2014, 2017, 2019)
+
+ampd_sym %>% filter(year %in% years, STATE == "NM") %>%
+  ggplot(aes(month, NOx.to.Heat, color= year, group= year)) +
+  geom_point() + geom_line()+ labs(x= "Month", 
+                                   y = "NOx Emission/Heat Input(tons/MMBtu)",
+                                   title = "New Mexico") +
+  scale_x_continuous(breaks = seq(0, 12, by = 1))  
+
+ampd_sym %>% filter(year %in% years, STATE == "NM") %>%
+  ggplot(aes(month, NOx.to.CO2, color= year, group= year)) +
+  geom_point() + geom_line()+ labs(x= "Month", 
+                                   y = "NOx/CO2  (tons/tons)",
+                                   title = "New Mexico") +
+  scale_x_continuous(breaks = seq(0, 12, by = 1))  
+
+
+
+
+
+
+
+
+
+
