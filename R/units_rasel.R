@@ -1,9 +1,18 @@
+#Script 6: #This script generates ampd yearly emission data considering  Primary Fuel is only Coal for using in disperseR package
+
+
+#Here I've included all facilities (not only electric facility) 
+# [1] "Electric Utility"     "Cogeneration"         "Small Power Producer" "Industrial Boiler"   
+# [5] "Industrial Turbine"   "Pulp & Paper Mill"    "Iron & Steel"         "Institutional"       
+# [9] "Petroleum Refinery"   "Cement Manufacturing"
+
 # Here i followed untis data preparation from disperseR vignette
 #http://htmlpreview.github.io/?https://github.com/lhenneman/disperseR/blob/master/vignettesHTML/Vignette_Units_Preparation.html
 
 
 
-#this file is to create units data file for disperseR package using PP.units.monthly 1995 to 2020 data
+#this file is to create units data file considering Primary Fuel is Coal
+# for disperseR package using PP.units.monthly 1997 to 2021 data
 
 library(disperseR) # our package
 library(ncdf4)
@@ -24,8 +33,7 @@ library(measurements)
 
 disperseR::create_dirs("/Users/munshirasel/Google Drive/R/ampd-3")
 
-url <-
-  "ftp://newftp.epa.gov/air/emismod/2014/v2/2014fd/emissions/2014fd_inputs_point.zip"
+url <- "ftp://newftp.epa.gov/air/emismod/2014/v2/2014fd/emissions/2014fd_inputs_point.zip"
 directory <- proc_dir
 file <- file.path(directory, '2014fd_inputs_point.zip')
 
@@ -43,9 +51,9 @@ d_nei <- data.table::fread(file, skip = 18)
 
 #AMPD data attaching
 
-file <- load ("data/PP.units.monthly1995_2020.RData")
+file <- load ("data/PP.units.monthly1997_2021.rda")
 
-d_ampd <- PP.units.monthly1995_2020
+d_ampd <- PP.units.monthly1997_2021
 
 # d_ampd <- transform(PP.units.monthly1995_2020, Year = as.numeric(Year))
 
@@ -73,7 +81,7 @@ d_nei_unique <- d_nei_unique[Facility.ID..ORISPL. != "" & Unit.ID != ""]
 d_nei_unique <- d_nei_unique[, Facility.ID..ORISPL. := as.numeric(d_nei_unique$Facility.ID..ORISPL.)]
 
 
-PP.units.monthly1995_2020_2 <- unique(PP.units.monthly1995_2020, by = c("Facility.ID..ORISPL.", "Unit.ID", "Month"))
+PP.units.monthly1997_2021 <- unique(PP.units.monthly1997_2021, by = c("Facility.ID..ORISPL.", "Unit.ID", "Month"))
 
 
 # we can use different fuel type. Here I'm considering Coal fuel type for further analysis
@@ -177,7 +185,7 @@ get_units_data <- function(year, d_ampd) {
 }
 
 
-vector_years<-c(1995:2020)
+vector_years<-c(1995:2021)
 
 
 
@@ -185,17 +193,9 @@ units <- data.table::setDF(data.table::rbindlist(lapply(vector_years,
                                                         get_units_data, 
                                                         d_ampd=d_ampd2)))
 
-units <- units %>%
-  mutate(uID=gsub("-", ".", ID))
+units <- units %>% mutate(uID=gsub("-", ".", ID))
 
-save(units, file = "data/units_rasel.rda")
-
+save(units, file = "data/units_coal_1997_2021.rda")
 
 
-# 
-# # Aggregate over week number and climate division
-# dfx<- aggregate(SO2..tons.~month+ORISPL_CODE+UNITID+year,
-#                 FUN=sum, data=df_subset, na.rm=FALSE)
-# 
-# dfx %>% filter ( year == 1997, month == 1, ORISPL_CODE == 3,
-#                  UNITID==1)
+

@@ -1,4 +1,15 @@
-# Here i followed untis data preparation from disperseR vignette
+#Script 7: #This script generates ampd yearly emission data considering  all types of Fuel for using in disperseR package
+
+
+#Here I've included all facilities (not only electric facility) 
+# [1] "Electric Utility"     "Cogeneration"         "Small Power Producer" "Industrial Boiler"   
+# [5] "Industrial Turbine"   "Pulp & Paper Mill"    "Iron & Steel"         "Institutional"       
+# [9] "Petroleum Refinery"   "Cement Manufacturing"
+
+
+
+
+# Here i followed units data preparation from disperseR vignette
 #http://htmlpreview.github.io/?https://github.com/lhenneman/disperseR/blob/master/vignettesHTML/Vignette_Units_Preparation.html
 
 
@@ -24,8 +35,7 @@ library(measurements)
 
 disperseR::create_dirs("/Users/munshirasel/Google Drive/R/ampd-3")
 
-url <-
-  "ftp://newftp.epa.gov/air/emismod/2014/v2/2014fd/emissions/2014fd_inputs_point.zip"
+url <-  "ftp://newftp.epa.gov/air/emismod/2014/v2/2014fd/emissions/2014fd_inputs_point.zip"
 directory <- proc_dir
 file <- file.path(directory, '2014fd_inputs_point.zip')
 
@@ -43,9 +53,9 @@ d_nei <- data.table::fread(file, skip = 18)
 
 #AMPD data attaching
 
-file <- load ("data/PP.units.monthly1995_2020.rda")
+file <- load ("data/PP.units.monthly1997_2021.rda")
 
-d_ampd <- PP.units.monthly1995_2020
+d_ampd <- PP.units.monthly1997_2021
 
 # d_ampd <- transform(PP.units.monthly1995_2020, Year = as.numeric(Year))
 
@@ -207,7 +217,7 @@ get_units_data <- function(year, d_ampd) {
 }
 
 
-vector_years<-c(1995:2020)
+vector_years<-c(1997:2021)
 
 
 
@@ -215,31 +225,9 @@ units <- data.table::setDF(data.table::rbindlist(lapply(vector_years,
                                                         get_units_data, 
                                                         d_ampd=d_ampd2)))
 
-units <- units %>%
-  mutate(uID=gsub("-", ".", ID))
+units <- units %>% mutate(uID=gsub("-", ".", ID))
 
-save(units, file = "data/units_all_rasel.rda")
-
-
-###
+save(units, file = "data/units_all_fuel.rda")
 
 
 
-county.list.tx <- d_ampd %>% filter (State== "TX") %>% select(Facility.ID..ORISPL., Unit.ID, County ) 
-
-
-
-unique(county.list.tx$ County)
-
-d_ampd %>% filter (State== "TX", County == "Bastrop County", Year ==2013) %>% head(80)
-
-
-
-
-# 
-# # Aggregate over week number and climate division
-# dfx<- aggregate(SO2..tons.~month+ORISPL_CODE+UNITID+year,
-#                 FUN=sum, data=df_subset, na.rm=FALSE)
-# 
-# dfx %>% filter ( year == 1997, month == 1, ORISPL_CODE == 3,
-#                  UNITID==1)

@@ -1,3 +1,7 @@
+#Part 2: AMPD-Raw data processing starts here
+
+#Script 1: Converting daily emission data into monthly emission data
+
 library(ncdf4)
 library(data.table)
 library(tidyverse)
@@ -31,13 +35,11 @@ rm(df2)
 head(df)
 
 #separating dates in different columns
-df<- df %>% 
-  mutate(date = mdy(OP_DATE)) %>% 
-  mutate_at(vars(date), funs(year, month, day))
+df<- df %>% mutate(date = mdy(OP_DATE)) %>% mutate_at(vars(date), funs(year, month, day))
 
 #merging two columns (SO2_Mass (not sure about unit guesing as tons)+ SO2_Mass..tons); similarly others
 
-#Dataset were divided under different columns  after .
+#Dataset were divided under different columns  after certain years
 
 df$Gross.Load..MW.h. = coalesce(df$GLOAD,df$GLOAD..MWh.)
 df$SO2..tons. = coalesce(df$ SO2_MASS, df$ SO2_MASS..tons.)

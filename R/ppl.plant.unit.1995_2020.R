@@ -1,3 +1,6 @@
+#This script generates ampd monthly emission data to be used in disperseR package
+
+
 library(ncdf4)
 library(data.table)
 library(tidyverse)
@@ -20,7 +23,7 @@ library(lubridate)
 setwd ("/Users/munshirasel/Google Drive/R/ampd-3")
 
 
-ampd_raw <- read.fst ("data/ampd_raw.fst")
+ampd_raw <- read.fst ("data/ampd_monthly_all.fst")
 
 names(ampd_raw)
 
@@ -56,7 +59,12 @@ DTUS <- ampd_raw [ , .(
 
 write.csv(DTUS, "data/AMPD_Unit.csv")
 
-PP.units.monthly1995_2020 <- fread("data/AMPD_Unit.csv")
+PP.units.monthly1997_2021 <- fread("data/AMPD_Unit.csv")
 
-save( PP.units.monthly1995_2020,
-      file = 'data/PP.units.monthly1995_2020.RData')
+PP.units.monthly1997_2021 [, V1 := NULL]
+
+PP.units.monthly1997_2021 <-PP.units.monthly1997_2021 %>% filter(Year >=1997)
+
+save( PP.units.monthly1997_2021,
+      file = 'data/PP.units.monthly1997_2021.rda')
+
