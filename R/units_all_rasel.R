@@ -227,7 +227,7 @@ units <- data.table::setDF(data.table::rbindlist(lapply(vector_years,
 
 units <- units %>% mutate(uID=gsub("-", ".", ID))
 
-save(units, file = "data/units_all_fuel.rda")
+save(units, file = "data/units_all_fuel_1997_2021.rda")
 
 
 

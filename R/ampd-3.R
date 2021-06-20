@@ -104,104 +104,10 @@ dfx<- setDT(df_subset)[, .(SO2..tons. = sum(SO2..tons., na.rm=TRUE),
                            HEAT.INPUT = sum(HEAT.INPUT, na.rm=TRUE)), 
                        by = .(STATE, FACILITY_NAME, ORISPL_CODE, UNITID, year, month)]
 
-# ampd_mon <- aggregate(list (                   SO2..tons.=df_subset$SO2..tons.,
-#                                                 NOx..tons. = df_subset$NOx..tons.,
-#                                                CO2..tons.= df_subset$CO2..tons.,
-#                             Avg.SO2.RATE = df_subset$SO2.RATE,
-#                             Avg.NOx.RATE = df_subset$NOx.RATE,
-#                             Avg.CO2.RATE = df_subset$CO2.RATE,
-#                             SUM_OP_TIME = df_subset$SUM_OP_TIME,
-#                                                Gross.Load..MW.h.=df_subset$Gross.Load..MW.h.,
-#                                                Steam.Load..1000lb.= df_subset$Steam.Load..1000lb.,
-#                                                Heat.Input..MMBtu.= df_subset$Heat.Input..MMBtu.),
-#                       by=list( STATE= df_subset$ State.x, year=df_subset$Year,
-#             month=df_subset $Month, ORISPL_CODE= df_subset$ORISPL_CODE,
-#             UNITID= df_subset$UNITID), FUN=sum, na.rm=TRUE)
 
 
 
 
 write.fst(dfx, "data/ampd_monthly.fst")
-
-
-
-# str(dfx)
-# dfx %>% filter ( year == 1997, month == 1, ORISPL_CODE == 3,
-#                                  UNITID=="1")
-# 
-# dfx %>% filter ( year == 2020, month == 1, ORISPL_CODE == 55284,
-#                  UNITID=="GS04")
-# 
-# 
-# 
-# 
-# dfx %>% filter ( year == 2014, month == 1, ORISPL_CODE == 880100,
-#                  UNITID=="BLR004")
-# #this data matches with ampd-3.R file where I downloaded data automatically using url. It means
-# #data validation is ok.
-# 
-# 
-# 
-# 
-# 
-# 
-# df %>% filter ( year == 2020, month == 1, ORISPL_CODE == 55284,
-#                  UNITID=="GS04")
-# 
-# df_subset %>% filter ( year == 1995, month == 1, ORISPL_CODE == 47,
-#                        UNITID=="5") 
-# 
-# 
-# 
-# df %>% filter ( ORISPL_CODE==880041)
-
-
-
-
-
-
-# rm (df_subset)
-
-# str(df_subset)
-
-# write.fst(df_subset2, "df_subset.fst")
-
-#aggregating daily data set into monthly dataset
-# df_subset<- read.fst("df_subset.fst")
-
-
-
-# head (df_month, 100)
-# rm(df_month)
-# 
-# #all the variable along with date data is showing. I'll get unique dataset
-# 
-# write.fst(df_month, "df_month.fst")
-# 
-# rm(df_subset2)
-
-# df_month <- unique(df_month, by = c("ORISPL_CODE", "UNITID", "month"))
-# df_month2 <- unique(df_month, by = c("ORISPL_CODE", "UNITID", "month", "year", "STATE") ) 
-# 
-# # rm (df_month)
-# 
-# df_month2 <- df_month2[order(year, month),]
-# 
-# write.fst (df_month2, "df_month.fst")
-# 
-# length (unique(df_month$ month))
-# 
-# df_month2 %>% filter (FACILITY_NAME== "Barry" , year == 2015, ORISPL_CODE == 3 ) 
-# #value is not matching with  AMPD dataset
-# 
-# 
-# df_barry <- df_subset2 %>% filter (FACILITY_NAME== "Barry" , year == 1997, month == 1, ORISPL_CODE == 3,
-#                   UNITID==1) %>% 
-#   head (32)
-# sum( df_barry $ SO2..tons.) # 549.668 value same as d_ampd from units-data prep.R file same as AMPD-RASEL.R SO2 tons value for barry facility
-# 
-# # this means our code has some problem
-
-
 
 
