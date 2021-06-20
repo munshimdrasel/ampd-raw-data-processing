@@ -200,7 +200,7 @@ colnames(ampd_harvard2)[4] <- "Fuel.Type..Secondary."
 
 dfz<- as.data.table(dfz)
 
-dfz<- unique( dfz, by = c ("ORISPL_CODE", "UNITID", "year", "month", "STATE"))
+dfz<- unique( dfz, by = c ("ORISPL_CODE", "UNITID", "date", "STATE"))
 
 ampd_harvard2<- unique( ampd_harvard2, by = c ("ORISPL_CODE", "UNITID", "State.x"))
 
