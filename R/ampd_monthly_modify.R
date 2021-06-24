@@ -75,41 +75,48 @@ colnames(facility_attributes)[3] <- "ORISPL_CODE"
 
 colnames(facility_attributes)[4] <- "UNITID"
 
-facility_attributes <- facility_attributes %>% dplyr::select (-c ("Fuel.Type..Primary.", "Fuel.Type..Secondary."))
+# facility_attributes <- facility_attributes %>% dplyr::select (-c ("Fuel.Type..Primary.", "Fuel.Type..Secondary."))
 
 
+length(unique(ampd_monthly$ORISPL_CODE))
+length(unique(facility_attributes$ORISPL_CODE))
+
+#since facility attributes has less facility, ampd_monthly dataset obs will be reduced (1140789 original)
 #adding two dataframe
 
 dfy <- merge(ampd_monthly,facility_attributes,by=c("ORISPL_CODE","UNITID"))
 
+dfy<- unique( dfy, by = c ("ORISPL_CODE", "UNITID", "year", "month", "STATE"))
+
+names(dfy)
 
 #here merging Fuel types information from ampd harva dataset 
 #In facility attributes some of the facility has no information on Primary fuel types.
 #for example facility 54 Orispl CODE and UNIT ID SCT1 & SCT2 has both "" and "Pipeline nat. gas" in facility attributes file
 #Ampd harvard dataset covers most of this issue (not sure how did they do this, may be assumed "" values with the known values)
-
-ampd_harvard <- fread ("data/AMPD_Unit_with_Sulfur_Content_and_Regulations_with_Facility_Attributes.csv")
-ampd_harvard<- as.data.table (ampd_harvard)
-ampd_harvard <- ampd_harvard [ , V1 := NULL] 
-ampd_harvard<- unique( ampd_harvard, by = c ("Facility.ID..ORISPL.", "Unit.ID", "Year", "Month", "State.x"))
-ampd_harvard2 <- ampd_harvard %>% dplyr::select (c("Facility.ID..ORISPL.", "Unit.ID", "Fuel.Type..Primary..y",
-                                            "Fuel.Type..Secondary..y", "State.x"))
-
-colnames(ampd_harvard2)[1] <- "ORISPL_CODE"
-colnames(ampd_harvard2)[2] <- "UNITID"
-colnames(ampd_harvard2)[3] <- "Fuel.Type..Primary."
-colnames(ampd_harvard2)[4] <- "Fuel.Type..Secondary."
+# 
+# ampd_harvard <- fread ("data/AMPD_Unit_with_Sulfur_Content_and_Regulations_with_Facility_Attributes.csv")
+# ampd_harvard<- as.data.table (ampd_harvard)
+# ampd_harvard <- ampd_harvard [ , V1 := NULL] 
+# ampd_harvard<- unique( ampd_harvard, by = c ("Facility.ID..ORISPL.", "Unit.ID", "Year", "Month", "State.x"))
+# ampd_harvard2 <- ampd_harvard %>% dplyr::select (c("Facility.ID..ORISPL.", "Unit.ID", "Fuel.Type..Primary..y",
+#                                             "Fuel.Type..Secondary..y", "State.x"))
+# 
+# colnames(ampd_harvard2)[1] <- "ORISPL_CODE"
+# colnames(ampd_harvard2)[2] <- "UNITID"
+# colnames(ampd_harvard2)[3] <- "Fuel.Type..Primary."
+# colnames(ampd_harvard2)[4] <- "Fuel.Type..Secondary."
 
 
 dfy<- as.data.table(dfy)
 
-dfy<- unique( dfy, by = c ("ORISPL_CODE", "UNITID", "year", "month", "STATE"))
 
-ampd_harvard2<- unique( ampd_harvard2, by = c ("ORISPL_CODE", "UNITID", "State.x"))
 
-dfy <- merge(dfy,ampd_harvard2,by=c("ORISPL_CODE","UNITID"))
+# ampd_harvard2<- unique( ampd_harvard2, by = c ("ORISPL_CODE", "UNITID", "State.x"))
 
-dfy2 <- dfy %>% dplyr::select (-c ("State", "NA.", "State.x"))
+# dfy <- merge(dfy,ampd_harvard2,by=c("ORISPL_CODE","UNITID"))
+
+# dfy2 <- dfy %>% dplyr::select (-c ("State", "NA.", "State.x"))
 
 
 

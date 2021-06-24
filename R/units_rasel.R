@@ -198,4 +198,11 @@ units <- units %>% mutate(uID=gsub("-", ".", ID))
 save(units, file = "data/units_coal_1997_2021.rda")
 
 
+units_base <- units
+units_created <- units
+
+units_base_2018 <- units_base %>% filter (year==2018)
+units_created_2018 <- units_created %>% filter (year==2018)
+length(unique(units_base_2018$ID))
+length(unique(units_created_2018$ID))
 
