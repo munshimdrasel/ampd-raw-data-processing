@@ -217,12 +217,12 @@ length(unique(units_base_2018$ID))
 length(unique(units_created_2018$ID))
 
 units_base_y<- aggregate(list (NOx=units_base$NOx,
-                                  SOx=units_base$NOx), 
+                                  SOx=units_base$SOx), 
                          by=list(  year=units_base$year), FUN=sum, na.rm=TRUE)
 units_base_y$group <- "emis_disperseR"
 
 units_created_y<- aggregate(list (NOx=units_created$NOx,
-                               SOx=units_created$NOx), 
+                               SOx=units_created$SOx), 
                          by=list(  year=units_created$year), FUN=sum, na.rm=TRUE)
 units_created_y$group <- "emis_updated"
 
