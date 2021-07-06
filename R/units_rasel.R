@@ -226,16 +226,18 @@ units_created_y<- aggregate(list (NOx=units_created$NOx,
                          by=list(  year=units_created$year), FUN=sum, na.rm=TRUE)
 units_created_y$group <- "emis_updated"
 
-units_combined <- facility_attributes <- do.call("rbind", list(units_created_y, units_base_y))
+units_combined <-  do.call("rbind", list(units_created_y, units_base_y))
 
 #NOx comparison
-ggplot() + geom_point(data= units_combined, aes( year, NOx,color= group, group= group)) +
+ggplot() + geom_point(data= units_combined, aes( year, NOx,color= group, group= group)) + 
+  geom_line(data= units_combined, aes( year, NOx,color= group, group= group)) +
   scale_x_continuous(breaks = seq(1995, 2021, by = 2))  +
-  labs(x= "Year",   y = "NOx Emission (tons)", title = "")
+  labs(x= "Year",   y = "NOx Emission (tons)", title = "Yearly coal fired power plants emission comparison")
 
 #SO2 comparison
 ggplot() + geom_point(data= units_combined, aes( year, SOx,color= group, group= group)) +
+  geom_line (data= units_combined, aes( year, SOx,color= group, group= group)) +
   scale_x_continuous(breaks = seq(1995, 2021, by = 2))  +
-  labs(x= "Year",   y = "SO2 Emission (tons)", title = "") 
+  labs(x= "Year",   y = "SO2 Emission (tons)", title = "Yearly coal fired power plants emission comparison") 
 
 
