@@ -1,4 +1,4 @@
-#Script 3: Merging facility attributes on monthly data
+#Script 3: Merging facility attributes with ampd monthly emission data 
 #here I've used Facility attributes data provided by Prof. Lucas Henneman;
 
 
