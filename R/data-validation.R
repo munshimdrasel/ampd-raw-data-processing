@@ -1,5 +1,5 @@
 
-#Script 2: Validating monthly AMPD datasets with AMPD Harvard datasets
+#Script 2: Validating monthly AMPD emissions data (without facility attributes) with AMPD Harvard datasets 
 
 #Harvard data downloading website: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/E0FLPT
 
