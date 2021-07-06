@@ -27,14 +27,9 @@ setwd ("/Users/munshirasel/Google_Drive/R/ampd-3")
 
 ampd_raw <- read.fst ("data/ampd_monthly_all.fst")
 
-
-
-
 ampd_raw<-as.data.table(ampd_raw)
 
 str(ampd_raw)
-
-
 
 DTUS <- ampd_raw [ , .(
   Facility.ID..ORISPL.=ORISPL_CODE,
@@ -87,7 +82,7 @@ load("data/PP.units.monthly1997_2021.rda")
 PP.units.monthly1997_2021 <- PP.units.monthly1997_2021 %>% filter(Year>= 1997 & Year<=2017)
 
 
-length(unique(PP.units.monthly1995_2017$uID)) #disperseR dataset has 5867 unit id
+length(unique(PP.units.monthly1995_2017$uID)) #disperseR dataset has 5866 unit id
 
 length(unique(PP.units.monthly1997_2021$uID)) #updated dataset has 5959 unit id.
 
@@ -133,3 +128,32 @@ unique(PP.units.monthly1997_2021$Fuel.Type..Primary.[PP.units.monthly1997_2021$F
 sum(PP.units.monthly1995_2017$NOx.tons, na.rm=T)
 
 sum(PP.units.monthly1997_2021$NOx..tons., na.rm=T)
+
+
+#monthly plot of emissions data from disperseR vs. updated data (for all fuel types)
+monthly.disperseR_ym <- aggregate(list (NOx..tons.=PP.units.monthly1995_2017$NOx.tons, 
+                                                  SO2..tons.=PP.units.monthly1995_2017$SO2.tons
+                                           ), by=list( year=PP.units.monthly1995_2017$year,
+            month=PP.units.monthly1995_2017$month), FUN=sum, na.rm=T)
+
+monthly.disperseR_ym$group <- "emis_monthly_disperseR"
+
+monthly.updated_ym <- aggregate(list (NOx..tons.=PP.units.monthly1997_2021$NOx..tons., 
+                                      SO2..tons.=PP.units.monthly1997_2021$SO2..tons.
+), by=list( year=PP.units.monthly1997_2021$Year,
+            month=PP.units.monthly1997_2021$Month), FUN=sum, na.rm=T)
+
+monthly.updated_ym$group <- "emis_monthly_updated"
+
+
+emission_monthly_combined <- do.call("rbind", list(monthly.disperseR_ym, monthly.updated_ym))
+
+
+years <- c (2017)
+emission_monthly_combined%>% filter (year %in% years) %>% 
+  ggplot(aes(month, NOx..tons., group= group, color= group)) + geom_line() + geom_point() +
+  scale_x_continuous(breaks = seq(1, 12, by = 1)) + labs(x= "month", 
+                                                              y = "NOx (tons)",
+                                                              title = "2017") 
+
+
