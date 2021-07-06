@@ -152,8 +152,10 @@ emission_monthly_combined <- do.call("rbind", list(monthly.disperseR_ym, monthly
 years <- c (2017)
 emission_monthly_combined%>% filter (year %in% years) %>% 
   ggplot(aes(month, NOx..tons., group= group, color= group)) + geom_line() + geom_point() +
-  scale_x_continuous(breaks = seq(1, 12, by = 1)) + labs(x= "month", 
-                                                              y = "NOx (tons)",
-                                                              title = "2017") 
+  scale_x_continuous(breaks = seq(1, 12, by = 1)) + labs(x= "month",  y = "NOx (tons)", title = "2017") 
+
+emission_monthly_combined%>% filter (year %in% years) %>% 
+  ggplot(aes(month, SO2..tons., group= group, color= group)) + geom_line() + geom_point() +
+  scale_x_continuous(breaks = seq(1, 12, by = 1)) + labs(x= "month",  y = "NOx (tons)", title = "2017") 
 
 
