@@ -1,6 +1,6 @@
 #Part 2: AMPD-Raw data processing starts here
 
-#Script 1: Converting daily emission data into monthly emission data
+#Script 1: Converting daily emission data into monthly emission data (without any facility attributes)
 
 library(ncdf4)
 library(data.table)
