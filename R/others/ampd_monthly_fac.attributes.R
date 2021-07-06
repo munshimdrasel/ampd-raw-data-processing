@@ -1,5 +1,6 @@
+#script 3 (use this script)
 #Script 3: Merging facility attributes on monthly data
-#here I've used Facility attributes data provided by Prof. Lucas Henneman;
+#here I've used Facility attributes data provided by Prof. Lucas Henneman
 
 
 rm(list = ls())
@@ -31,15 +32,19 @@ library(stringr)
 setwd ("/Users/munshirasel/Google_Drive/R/ampd-3")
 
 
-#on hopper cluster use this working directory:
+#on hopper cluster
 #setwd ("/projects/HAQ_LAB/mrasel/R/ampd-raw-data-processing")
 
 
-#see ampd-3.R file for more details on the dataset
 ampd_monthly<- as.data.table(read.fst ("data/ampd_monthly.fst"))
 
+# ampd_monthly_va <- ampd_monthly %>% filter (STATE=="VA")
 
 facility_attributes <- fread ("data/facility_2016-2018_3.csv")
+
+
+names(facility_attributes)
+names (ampd_monthly)
 
 
 variables <- make.names(c(
@@ -86,86 +91,51 @@ colnames(facility_attributes)[4] <- "UNITID"
 
 colnames(facility_attributes)[1] <- "STATE"
 
+# facility_attributes <- facility_attributes %>% dplyr::select (-c ("Fuel.Type..Primary.", "Fuel.Type..Secondary."))
+
+
+# facility_attributes_va <- facility_attributes %>% filter (STATE=="VA")
 
 length(unique(ampd_monthly$ORISPL_CODE))
 length(unique(facility_attributes$ORISPL_CODE))
 
-#my data is short of 23 facilities. missing facilities (example: ORISPL CODE: 10784, 913)
+#my data is short of 23 facilities
+
+#merging two dataframe
 
 
+# ampd_monthly_va <- ampd_monthly_va[, ID := paste(ORISPL_CODE, UNITID, sep = "-")]
+# 
+# 
+# facility_attributes_va <- facility_attributes_va[, ID := paste(ORISPL_CODE, UNITID, sep = "-")]
 
+# facility_attributes <- facility_attributes %>% 
+#   dplyr::select (-c ("STATE", "ORISPL_CODE", "UNITID" ))
+# facility_attributes_va <- facility_attributes_va %>% 
+#   dplyr::select (-c ("ORISPL_CODE", "UNITID", "STATE" ))
 
+# length(unique(ampd_monthly_va$ID))
+# length(unique(facility_attributes_va$ID))
 ampd_monthly <- as_tibble(ampd_monthly %>% distinct())
 facility_attributes <- as_tibble((facility_attributes %>% distinct()))
 
-#removing 0's from in front of UNITID in monthly emission datasets and facility attributes
 ampd_monthly$UNITID <-  str_replace(ampd_monthly$UNITID, "^0+" ,"")
 facility_attributes$UNITID <- str_replace(facility_attributes$UNITID, "^0+" ,"")
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==7790] <- "1-Jan" #for 7790 facility, unit id in disperseR unit data is different from my dataset. my data set has "1-1
-
-#ampd_harvard dataset 6193 facility has units that has 0 infront of them
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==6193 & ampd_monthly$UNITID== "61B"] <- "061B"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==6193 & ampd_monthly$UNITID== "62B"] <- "062B"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==6193 & ampd_monthly$UNITID== "63B"] <- "063B"
-facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "61B"] <- "061B"
-facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "62B"] <- "062B"
-facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "63B"] <- "063B"
-
-#facility 1004, 2832 check (unit id has different name)
-
-unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==2832])
-unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832])
-
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832 & ampd_monthly$UNITID== "5-1"] <- "1-May"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832 & ampd_monthly$UNITID== "5-2"] <- "2-May"
-
-unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832])
-
-unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==1004])
-unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004])
-
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "6-1"] <- "1-Jun"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "7-1"] <- "1-Jul"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "7-2"] <- "2-Jul"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "8-1"] <- "1-Aug"
+ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==7790] <- "1-Jan" #for 7790 facility, unit id is different from my dataset. my data set has "1-1
 
 
+#Year is activity year. In that year may be facility changed fuel types.
 
-
-
-unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004])
-# 6193-061B #need to change unit id of facility attributes and emission data to 061 to match with units data in disperseR
-
-#assuming all facility attributes of 2019 are same for the year of 2020 & 2021 (couldn't find updated facility attributes from epa ampd website)
-facility_attributes_2019 <- facility_attributes %>% filter(Year==2019)
-
-facility_attributes_2019$Year [facility_attributes_2019$Year==2019] <- 2020
-
-facility_attributes_2020 <- facility_attributes_2019
-
-facility_attributes_2019$Year [facility_attributes_2019$Year==2020] <- 2021
-
-facility_attributes_2021 <- facility_attributes_2019
-
-facility_attributes <- do.call("rbind", list(facility_attributes, facility_attributes_2020, facility_attributes_2021))
-
-unique(facility_attributes$Year)
-
-#Year is activity year. In that year may be facility changed fuel types/ or implemented new regulations etc.
 ampd_monthly$Year <- ampd_monthly$year
+dfy <- merge(ampd_monthly,facility_attributes, by=c("STATE", "ORISPL_CODE",
+                                                            "UNITID", "Year" ), all.x = T, allow.cartesian = T) 
 
-#merging
-dfy <- merge(ampd_monthly,facility_attributes, by=c("STATE", "ORISPL_CODE","UNITID", "Year" ), 
-             all.x = T, allow.cartesian = T) 
-
-#dfy observation must match ampd_monthly observations 
+names(dfy)
 
 dfy<- unique( as.data.table(dfy), by = c ("ORISPL_CODE", "UNITID", "year", "month", "STATE" )) 
 
 
 dfy<- as.data.table(dfy)
-
-dfy[, ID := paste(ORISPL_CODE, UNITID, sep = "-")]
 
 write.fst(dfy, "data/ampd_monthly_all.fst")
 
@@ -173,10 +143,12 @@ write.fst(dfy, "data/ampd_monthly_all.fst")
 
 # Data validation with AMPD Harvard datasets after merging Facility attributes information
 
+# Issue: after merging I'm missing some information. ampd_monthly dataset has 1140789 observation
+# However, when I merge facility attributes and create ampd_monthly_all file, it has 1072662 observations  (1997-2020 Q1)
 # =============================================================================================
 
 
-#Data-validation: PART1
+
 
 ampd_raw <- read.fst ("data/ampd_monthly_all.fst")
 
@@ -186,8 +158,26 @@ names(ampd_harvard)
 ampd_harvard<- as.data.table (ampd_harvard)
 ampd_harvard <- ampd_harvard [ , V1 := NULL] 
 
+
+#Looking into texas 2010, month 7 data for example. 
+
+
+
+
+ampd_harvard%>% filter (State.x== "TX", Year== 2010, Month == 7) %>% top_n(2, NOx..tons.) %>% 
+  dplyr::select (Facility.ID..ORISPL.,  Unit.ID , NOx..tons. ,SO2..tons.  ) 
+
+ampd_raw %>% filter (STATE== "TX", year== 2010, month == 7) %>%top_n(2, NOx..tons.) %>%
+  dplyr::select (ORISPL_CODE, UNITID, NOx..tons., SO2..tons.)
+
+
+
 # geting unique values
 ampd_harvard<- unique( ampd_harvard, by = c ("Facility.ID..ORISPL.", "Unit.ID", "Year", "Month", "State.x"))
+
+
+
+
 
 #sorting AMPD data by state, year and month
 
@@ -211,6 +201,13 @@ ampd_ym<- aggregate(list (NOx..tons.=ampd_raw$NOx..tons.,
                           HEAT.INPUT= ampd_raw$HEAT.INPUT
 ), by=list( year=ampd_raw$year,
             month=ampd_raw $month), FUN=sum)
+
+
+
+#Changing column names of ampd_harvard data to match  column names of  ampd_raw data
+
+# 
+# ampd_harvard <- ampd_harvard %>% drop_na(NOx..tons.) 
 
 
 
@@ -359,49 +356,57 @@ ggarrange (plot1, plot2, labels= c("A", "B"), ncol=1, nrow=2)
 
 
 # ==================================
-# data validation: PART 2 : validating with respect to facility attributes
+# data validation
 # =================================
 
-ampd_raw <- as.data.table(read.fst ("data/ampd_monthly_all.fst"))
-ampd_raw[, ID := paste(ORISPL_CODE, UNITID, sep = "-")]
+ampd_monthly <- read.fst ("data/ampd_monthly_all.fst")
+ampd_monthly_coal <- ampd_monthly %>% filter (year>= 1997 & year <=2014 & Fuel.Type..Primary.== "Coal")
 
-coal.fuels <- c ("Coal", "Coal, Pipeline Natural Gas", "Coal, Natural Gas", "Coal, Other Gas",
-                 "Coal, Coal Refuse", "Coal Refuse", "Coal, Wood" )
+#368 units has coal fuel in my dataset
 
 #Harvard AMPD dataset
 
-# number of ORISPL Code matches with ampd_harvard dataset
+
 ampd_harvard <- fread ("data/AMPD_Unit_with_Sulfur_Content_and_Regulations_with_Facility_Attributes.csv")
 ampd_harvard<- as.data.table (ampd_harvard)
 ampd_harvard <- ampd_harvard [ , V1 := NULL]
 ampd_harvard<- unique( ampd_harvard, by = c ("Facility.ID..ORISPL.", "Unit.ID", "Year", "Month", "State.x"))
 ampd_harvard <- ampd_harvard[, ID := paste(Facility.ID..ORISPL., Unit.ID, sep = "-")]
+ampd_harvard_coal <- ampd_harvard %>% filter (Year>= 1997 & Year <=2014 & Fuel.Type..Primary..x=="Coal")
 
-#ampd_coal ORISPL code matches with ampd_harvard_coal ORISPL CODE numbers (check)
-ampd_harvard_coal <- ampd_harvard %>% filter (Year>= 1997 & Year <=2014 & Fuel1.IsCoal==1)
 length(unique(ampd_harvard_coal$Facility.ID..ORISPL.) )
-ampd_coal <- ampd_raw %>%  filter (year >=1997 & year <=2014 & Fuel.Type..Primary. %in% coal.fuels )
-length(unique(ampd_coal$ORISPL_CODE))
 
-length(unique(ampd_harvard_coal$Unit.ID) )
-length(unique(ampd_coal$UNITID))
+#harvard dataset has 533 facility with coal fuel types
 
+dfy1997_2014 <- dfy %>%  filter (year >=1997 & year <=2014  )
+length(unique(dfy1997_2014$ORISPL_CODE))
 
-sum(ampd_harvard_coal$NOx..tons., na.rm = T)
-sum(ampd_coal$NOx..tons., na.rm=T)
+dfy_coal <- dfy %>%  filter (year >=1997 & year <=2014 & Fuel.Type..Primary.=="Coal" )
+length(unique(dfy_coal$ORISPL_CODE))
 
-# almost same NOx emissions 59463888 vs 59456784
+ampd_harvard_facility <- unique(ampd_harvard_coal$Facility.ID..ORISPL.)
+dfy_coal_facility <- unique(dfy_coal$ORISPL_CODE)
 
-sum(ampd_harvard_coal$SO2..tons., na.rm = T)
-sum(ampd_coal$SO2..tons., na.rm=T)
-
-# almost same SO2 emissions
+ampd_harvard_facility %in% dfy_coal_facility
 
 
+ampd_harvard_facility[410]
+dfy_coal_7790 <- dfy%>% filter (ORISPL_CODE==7790)
 
+ampd_harvard_coal_7790 <- ampd_harvard %>%  filter (Facility.ID..ORISPL.==7790)
 
+facility_attributes_coal <- facility_attributes %>%  filter (Fuel.Type..Primary.== "Coal")
 
-#total facilities
+facility_attributes_coal_7790 <- facility_attributes %>% filter(ORISPL_CODE==7790)
+unique(facility_attributes_coal_6193$Fuel.Type..Primary.)
+
+length(unique(facility_attributes_coal$ORISPL_CODE))
+
+dfy_coal_units <- unique(dfy_coal$UNITID)
+fac_att_units <- unique(facility_attributes_coal$UNITID)
+
+xx <- fac_att_units %in% dfy_coal_units
+
 
 length(unique(ampd_monthly$UNITID))
 length(unique(dfy$UNITID))
@@ -409,30 +414,35 @@ length(unique(facility_attributes$UNITID))
 
 
 ####
+ampd_harvard_va <- ampd_harvard %>% filter (Year>= 1997 & Year <=2014  & 
+                                              State.x== "VA")
+
+length(unique(ampd_harvard_va$Facility.ID..ORISPL.))
+
+length(unique(dfy_va$ORISPL_CODE))
+
+
+
+length(unique(dfy_va_coal$ORISPL_CODE))
+length(unique(ampd_harvard_coal_va$Facility.ID..ORISPL.) )
+
+
+ampd_harvard_coal_va_10017 <- ampd_harvard_coal_va %>% filter (Facility.ID..ORISPL.==10017)
+dfy_va_10017 <- dfy_va %>% filter (ORISPL_CODE==10017)
+
+facility_attributes_va_10017 <- facility_attributes_va %>%  filter (ORISPL_CODE==10017)
+
+
+
+unique(dfy_va$UNITID)
+
+unique(facility_attributes_va$UNITID)
+
+
+
+#
+
 length(unique(ampd_harvard$Facility.ID..ORISPL.))
 length(unique(dfy$ORISPL_CODE))
 length(unique(facility_attributes$ORISPL_CODE ))
 
-
-####
-
-disperseR_units <- disperseR::units
-
-length(unique(disperseR_units$ID))
-
-ampd_coal <- ampd_raw %>% filter ( Fuel.Type..Primary. %in% coal.fuels)
-
-length(unique(ampd_coal$ID))
-
-
-##plots
-
-ampd_coal <- ampd_coal 
-
-ampd_coal_ym<- aggregate(list (NOx..tons.=ampd_coal$NOx..tons., 
-                          SO2..tons.=ampd_coal$SO2..tons.), by=list( year=ampd_coal$year,
-            month=ampd_coal $month), FUN=sum)
-ampd_coal_ym $group <- ""
-
-
-PP.units.monthly1995_2017

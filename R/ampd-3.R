@@ -21,7 +21,7 @@ library(plyr)
 library(RCurl)
 library(lubridate)
 
-setwd ("/Users/munshirasel/Google Drive/R/ampd-3")
+setwd ("/Users/munshirasel/Google_Drive/R/ampd-3")
 
 df <- read.fst ("data/emissions-raw.fst")
 
@@ -105,7 +105,7 @@ dfx<- setDT(df_subset)[, .(SO2..tons. = sum(SO2..tons., na.rm=TRUE),
                        by = .(STATE, FACILITY_NAME, ORISPL_CODE, UNITID, year, month)]
 
 
-
+length(unique(dfx$UNITID))
 
 
 write.fst(dfx, "data/ampd_monthly.fst")
