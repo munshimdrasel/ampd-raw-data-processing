@@ -1,4 +1,4 @@
-#units data preparation from disperseR vignette
+#units data preparation vignette from disperseR package
 
 # http://htmlpreview.github.io/?https://github.com/lhenneman/disperseR/blob/master/vignettesHTML/Vignette_Units_Preparation.html
 
@@ -38,6 +38,9 @@ file <- file.path( directory, "2014fd_cb6_14j", "inputs", "ptegu",
 d_nei <- data.table::fread(file, skip = 18)
 
 d_ampd <- data.table::fread("data/AMPD_Unit_with_Sulfur_Content_and_Regulations_with_Facility_Attributes.csv")
+
+#added this line to remove duplicated rows
+d_ampd<- unique( d_ampd, by = c ("Facility.ID..ORISPL.", "Unit.ID", "Year", "Month", "State.x"))
 
 d_ampd2 <- d_ampd
 
@@ -141,4 +144,4 @@ units <- data.table::setDF(data.table::rbindlist(lapply(vector_years,
 units <- units %>%
   mutate(uID=gsub("-", ".", ID))
 
-save(units, file = "units.Rda")
+save(units, file = "data/units_LH_corrected.Rda")
