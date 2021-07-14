@@ -90,9 +90,11 @@ names(df_subset)
 ampd_daily<- unique( df_subset, by = c ("ORISPL_CODE", "UNITID", "date", "STATE"))
 
 
-# write.fst(df_subset, "data/ampd_daily.fst")
+write.fst(df_subset, "data/ampd_daily.fst")
 
-facility_attributes <- fread ("data/facility_2016-2018_3.csv")
+# https://ampd.epa.gov/ampd/#?bookmark=28623  (facility attributes)
+
+facility_attributes <- fread ("data/facility_attributes_updated.csv")
 
 rm(df)
 rm (df_subset)
@@ -129,10 +131,9 @@ variables <- make.names(c(
   "Hg Control(s)",
   "Commercial Operation Date" ,
   "Operating Status",
-  "Max Hourly HI Rate (MMBtu/hr)"
+  "Max Hourly HI Rate (MMBtu/hr)",
+  "NA"
 ))
-
-
 
 setnames(facility_attributes, variables)
 
@@ -143,10 +144,12 @@ colnames(facility_attributes)[4] <- "UNITID"
 colnames(facility_attributes)[1] <- "STATE"
 
 
+sort(unique(facility_attributes$Year))
+
 length(unique(ampd_daily$ORISPL_CODE))
 length(unique(facility_attributes$ORISPL_CODE))
 
-#my data is short of 23 facilities. missing facilities (example: ORISPL CODE: 10784, 913)
+#my emission data is short of 58 facilities comparing to facility attributes files. missing facilities (example: ORISPL CODE: 10784, 913)
 
 ampd_daily <- as_tibble(ampd_daily %>% distinct())
 facility_attributes <- as_tibble((facility_attributes %>% distinct()))
@@ -155,63 +158,63 @@ facility_attributes <- as_tibble((facility_attributes %>% distinct()))
 ampd_daily$UNITID <-  str_replace(ampd_daily$UNITID, "^0+" ,"")
 facility_attributes$UNITID <- str_replace(facility_attributes$UNITID, "^0+" ,"")
 
-
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==7790] <- "1-Jan" #for 7790 facility, unit id in disperseR unit data is different from my dataset. my data set has "1-1
-
-#ampd_harvard dataset 6193 facility has units that has 0 infront of them
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==6193 & ampd_daily$UNITID== "61B"] <- "061B"
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==6193 & ampd_daily$UNITID== "62B"] <- "062B"
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==6193 & ampd_daily$UNITID== "63B"] <- "063B"
-facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "61B"] <- "061B"
-facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "62B"] <- "062B"
-facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "63B"] <- "063B"
-
-#facility 1004, 2832 check (unit id has different name)
-
-unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==2832])
-unique(ampd_daily$UNITID [ampd_daily$ORISPL_CODE==2832])
-
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==2832 & ampd_daily$UNITID== "5-1"] <- "1-May"
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==2832 & ampd_daily$UNITID== "5-2"] <- "2-May"
-
-unique(ampd_daily$UNITID [ampd_daily$ORISPL_CODE==2832])
-
-unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==1004])
-unique(ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004])
-
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004 & ampd_daily$UNITID== "6-1"] <- "1-Jun"
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004 & ampd_daily$UNITID== "7-1"] <- "1-Jul"
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004 & ampd_daily$UNITID== "7-2"] <- "2-Jul"
-ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004 & ampd_daily$UNITID== "8-1"] <- "1-Aug"
-
-
-
-
-
-unique(ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004])
-# 6193-061B #need to change unit id of facility attributes and emission data to 061 to match with units data in disperseR
-
-#assuming all facility attributes of 2019 are same for the year of 2020 & 2021 (couldn't find updated facility attributes from epa ampd website)
-facility_attributes_2019 <- facility_attributes %>% filter(Year==2019)
-
-facility_attributes_2019$Year [facility_attributes_2019$Year==2019] <- 2020
-
-facility_attributes_2020 <- facility_attributes_2019
-
-facility_attributes_2019$Year [facility_attributes_2019$Year==2020] <- 2021
-
-facility_attributes_2021 <- facility_attributes_2019
-
-facility_attributes <- do.call("rbind", list(facility_attributes, facility_attributes_2020, facility_attributes_2021))
-
-unique(facility_attributes$Year)
+# 
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==7790] <- "1-Jan" #for 7790 facility, unit id in disperseR unit data is different from my dataset. my data set has "1-1
+# 
+# #ampd_harvard dataset 6193 facility has units that has 0 infront of them
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==6193 & ampd_daily$UNITID== "61B"] <- "061B"
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==6193 & ampd_daily$UNITID== "62B"] <- "062B"
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==6193 & ampd_daily$UNITID== "63B"] <- "063B"
+# facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "61B"] <- "061B"
+# facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "62B"] <- "062B"
+# facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "63B"] <- "063B"
+# 
+# #facility 1004, 2832 check (unit id has different name)
+# 
+# unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==2832])
+# unique(ampd_daily$UNITID [ampd_daily$ORISPL_CODE==2832])
+# 
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==2832 & ampd_daily$UNITID== "5-1"] <- "1-May"
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==2832 & ampd_daily$UNITID== "5-2"] <- "2-May"
+# 
+# unique(ampd_daily$UNITID [ampd_daily$ORISPL_CODE==2832])
+# 
+# unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==1004])
+# unique(ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004])
+# 
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004 & ampd_daily$UNITID== "6-1"] <- "1-Jun"
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004 & ampd_daily$UNITID== "7-1"] <- "1-Jul"
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004 & ampd_daily$UNITID== "7-2"] <- "2-Jul"
+# ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004 & ampd_daily$UNITID== "8-1"] <- "1-Aug"
+# 
+# 
+# 
+# 
+# 
+# unique(ampd_daily$UNITID [ampd_daily$ORISPL_CODE==1004])
+# # 6193-061B #need to change unit id of facility attributes and emission data to 061 to match with units data in disperseR
+# 
+# #assuming all facility attributes of 2019 are same for the year of 2020 & 2021 (couldn't find updated facility attributes from epa ampd website)
+# facility_attributes_2019 <- facility_attributes %>% filter(Year==2019)
+# 
+# facility_attributes_2019$Year [facility_attributes_2019$Year==2019] <- 2020
+# 
+# facility_attributes_2020 <- facility_attributes_2019
+# 
+# facility_attributes_2019$Year [facility_attributes_2019$Year==2020] <- 2021
+# 
+# facility_attributes_2021 <- facility_attributes_2019
+# 
+# facility_attributes <- do.call("rbind", list(facility_attributes, facility_attributes_2020, facility_attributes_2021))
+# 
+# unique(facility_attributes$Year)
 
 #Year is activity year. In that year may be facility changed fuel types/ or implemented new regulations etc.
 ampd_daily$Year <- ampd_daily$year
 
 
-#filtering data from 2010
-ampd_daily <- ampd_daily %>% filter (Year >=2010)
+#filtering data from 2010 to 2020
+ampd_daily <- ampd_daily %>% filter (Year >=2010 & Year <=2020)
 
 #merging
 dfy <- merge(ampd_daily,facility_attributes, by=c("STATE", "ORISPL_CODE","UNITID", "Year" ), 
@@ -223,12 +226,6 @@ dfy <- merge(ampd_daily,facility_attributes, by=c("STATE", "ORISPL_CODE","UNITID
 dfy<- as.data.table(dfy)
 
 dfy[, ID := paste(ORISPL_CODE, UNITID, sep = "-")]
-
-# write.fst(dfy, "data/ampd_monthly_all.fst")
-
-
-
-
 
 
 # 
