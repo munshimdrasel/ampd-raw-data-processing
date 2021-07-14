@@ -51,11 +51,19 @@ DTUS <- ampd_raw [ , .(
   Operating.Time=SUM_OP_TIME,
   Source.Category,
   Fuel.Type..Primary.,
-  Fuel.Type..Secondary.
+  Fuel.Type..Secondary.,
+  Program.s.,
+  SO2.Phase,
+  NOx.Phase,
+  EPA.Region,
+  NERC.Region,
+  Fuel1.IsCoal,
+  Fuel2.IsCoal
+  
   
 )]
 
-# write.csv(DTUS, "data/AMPD_Unit.csv")
+write.csv(DTUS, "data/AMPD_Unit.csv")
 
 PP.units.monthly1997_2021 <- DTUS
 
@@ -64,8 +72,7 @@ PP.units.monthly1997_2021 <- DTUS
 PP.units.monthly1997_2021 <-as.data.table(PP.units.monthly1997_2021 %>% filter(Year >=1997))
 PP.units.monthly1997_2021 <- PP.units.monthly1997_2021[, uID := paste(Facility.ID..ORISPL., Unit.ID, sep = ".")]
 
-save( PP.units.monthly1997_2021,
-      file = 'data/PP.units.monthly1997_2021.rda')
+save( PP.units.monthly1997_2021,file = 'data/PP.units.monthly1997_2021.rda')
 
 
 # ==================================================Data Validation-===============================
@@ -114,6 +121,7 @@ ampd_harvard<- as.data.table (ampd_harvard)
 ampd_harvard <- ampd_harvard [ , V1 := NULL]
 ampd_harvard<- unique( ampd_harvard, by = c ("Facility.ID..ORISPL.", "Unit.ID", "Year", "Month", "State.x"))
 ampd_harvard <- ampd_harvard[, ID := paste(Facility.ID..ORISPL., Unit.ID, sep = "-")]
+
 ampd_harvard_55245_1 <- ampd_harvard %>%  filter (Facility.ID..ORISPL.==55245 & Unit.ID=="1")
 unique(ampd_harvard_55245_1$Fuel.Type..Primary..x)
 
@@ -153,6 +161,7 @@ years <- c (2017)
 emission_monthly_combined%>% filter (year %in% years) %>% 
   ggplot(aes(month, NOx..tons., group= group, color= group)) + geom_line() + geom_point() +
   scale_x_continuous(breaks = seq(1, 12, by = 1)) + labs(x= "month",  y = "NOx (tons)", title = "2017 monthly coal fired power plants emission comparison") 
+
 
 emission_monthly_combined%>% filter (year %in% years) %>% 
   ggplot(aes(month, SO2..tons., group= group, color= group)) + geom_line() + geom_point() +
