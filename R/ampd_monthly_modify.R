@@ -38,8 +38,9 @@ setwd ("/Users/munshirasel/Google_Drive/R/ampd-3")
 #see ampd-3.R file for more details on the dataset
 ampd_monthly<- as.data.table(read.fst ("data/ampd_monthly.fst"))
 
+# https://ampd.epa.gov/ampd/#?bookmark=28623  (facility attributes)
 
-facility_attributes <- fread ("data/facility_2016-2018_3.csv")
+facility_attributes <- fread ("data/facility_attributes_updated.csv")
 
 
 variables <- make.names(c(
@@ -73,10 +74,9 @@ variables <- make.names(c(
   "Hg Control(s)",
   "Commercial Operation Date" ,
   "Operating Status",
-  "Max Hourly HI Rate (MMBtu/hr)"
+  "Max Hourly HI Rate (MMBtu/hr)",
+  "NA"
 ))
-
-
 
 setnames(facility_attributes, variables)
 
@@ -90,66 +90,69 @@ colnames(facility_attributes)[1] <- "STATE"
 length(unique(ampd_monthly$ORISPL_CODE))
 length(unique(facility_attributes$ORISPL_CODE))
 
-#my data is short of 23 facilities. missing facilities (example: ORISPL CODE: 10784, 913)
+#my emission data is short of 58 facilities comparing to facility attributes files. missing facilities (example: ORISPL CODE: 10784, 913)
+
+sort(unique(facility_attributes$Year))
 
 
-
-
+#checking if data has duplicated rows
 ampd_monthly <- as_tibble(ampd_monthly %>% distinct())
 facility_attributes <- as_tibble((facility_attributes %>% distinct()))
 
-#removing 0's from in front of UNITID in monthly emission datasets and facility attributes
+#removing 0's from in front of UNITID in monthly emission datasets and facility attributes to match same UNITID in both datasets
 ampd_monthly$UNITID <-  str_replace(ampd_monthly$UNITID, "^0+" ,"")
 facility_attributes$UNITID <- str_replace(facility_attributes$UNITID, "^0+" ,"")
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==7790] <- "1-Jan" #for 7790 facility, unit id in disperseR unit data is different from my dataset. my data set has "1-1
+
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==7790] <- "1-Jan" #for 7790 facility, unit id in disperseR unit data is different from my dataset. my data set has "1-1
 
 #ampd_harvard dataset 6193 facility has units that has 0 infront of them
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==6193 & ampd_monthly$UNITID== "61B"] <- "061B"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==6193 & ampd_monthly$UNITID== "62B"] <- "062B"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==6193 & ampd_monthly$UNITID== "63B"] <- "063B"
-facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "61B"] <- "061B"
-facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "62B"] <- "062B"
-facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "63B"] <- "063B"
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==6193 & ampd_monthly$UNITID== "61B"] <- "061B"
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==6193 & ampd_monthly$UNITID== "62B"] <- "062B"
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==6193 & ampd_monthly$UNITID== "63B"] <- "063B"
+# facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "61B"] <- "061B"
+# facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "62B"] <- "062B"
+# facility_attributes$UNITID [facility_attributes$ORISPL_CODE==6193 & facility_attributes$UNITID== "63B"] <- "063B"
 
 #facility 1004, 2832 check (unit id has different name)
 
-unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==2832])
-unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832])
 
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832 & ampd_monthly$UNITID== "5-1"] <- "1-May"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832 & ampd_monthly$UNITID== "5-2"] <- "2-May"
+# unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==1004])
+# unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832])
 
-unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832])
-
-unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==1004])
-unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004])
-
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "6-1"] <- "1-Jun"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "7-1"] <- "1-Jul"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "7-2"] <- "2-Jul"
-ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "8-1"] <- "1-Aug"
-
-
-
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832 & ampd_monthly$UNITID== "5-1"] <- "1-May"
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832 & ampd_monthly$UNITID== "5-2"] <- "2-May"
+# 
+# unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==2832])
+# 
+# unique(facility_attributes$UNITID [facility_attributes$ORISPL_CODE==1004])
+# unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004])
+# 
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "6-1"] <- "1-Jun"
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "7-1"] <- "1-Jul"
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "7-2"] <- "2-Jul"
+# ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004 & ampd_monthly$UNITID== "8-1"] <- "1-Aug"
 
 
-unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004])
+
+
+
+# unique(ampd_monthly$UNITID [ampd_monthly$ORISPL_CODE==1004])
 # 6193-061B #need to change unit id of facility attributes and emission data to 061 to match with units data in disperseR
 
 #assuming all facility attributes of 2019 are same for the year of 2020 & 2021 (couldn't find updated facility attributes from epa ampd website)
-facility_attributes_2019 <- facility_attributes %>% filter(Year==2019)
+# facility_attributes_2019 <- facility_attributes %>% filter(Year==2019)
+# 
+# facility_attributes_2019$Year [facility_attributes_2019$Year==2019] <- 2020
+# 
+# facility_attributes_2020 <- facility_attributes_2019
+# 
+# facility_attributes_2019$Year [facility_attributes_2019$Year==2020] <- 2021
+# 
+# facility_attributes_2021 <- facility_attributes_2019
 
-facility_attributes_2019$Year [facility_attributes_2019$Year==2019] <- 2020
-
-facility_attributes_2020 <- facility_attributes_2019
-
-facility_attributes_2019$Year [facility_attributes_2019$Year==2020] <- 2021
-
-facility_attributes_2021 <- facility_attributes_2019
-
-facility_attributes <- do.call("rbind", list(facility_attributes, facility_attributes_2020, facility_attributes_2021))
-
-unique(facility_attributes$Year)
+# facility_attributes <- do.call("rbind", list(facility_attributes, facility_attributes_2020, facility_attributes_2021))
+# 
+# unique(facility_attributes$Year)
 
 #Year is activity year. In that year may be facility changed fuel types/ or implemented new regulations etc.
 ampd_monthly$Year <- ampd_monthly$year
@@ -162,10 +165,22 @@ dfy <- merge(ampd_monthly,facility_attributes, by=c("STATE", "ORISPL_CODE","UNIT
 
 dfy<- unique( as.data.table(dfy), by = c ("ORISPL_CODE", "UNITID", "year", "month", "STATE" )) 
 
+dfy <- dfy %>% dplyr::select(-"NA.")
 
 dfy<- as.data.table(dfy)
 
 dfy[, ID := paste(ORISPL_CODE, UNITID, sep = "-")]
+
+dfy[, Fuel1.IsCoal := as.numeric(grepl("Coal", Fuel.Type..Primary.))]
+dfy[Fuel.Type..Primary. == "", Fuel1.IsCoal := NA]
+
+dfy[, Fuel2.IsCoal := as.numeric(grepl("Coal", Fuel.Type..Secondary.))]
+dfy[Fuel.Type..Primary. == "", Fuel2.IsCoal := NA]
+
+###trying Has.SO2.scrubber variable 
+
+
+
 
 write.fst(dfy, "data/ampd_monthly_all.fst")
 
@@ -361,78 +376,78 @@ ggarrange (plot1, plot2, labels= c("A", "B"), ncol=1, nrow=2)
 # ==================================
 # data validation: PART 2 : validating with respect to facility attributes
 # =================================
+# 
+# ampd_raw <- as.data.table(read.fst ("data/ampd_monthly_all.fst"))
+# ampd_raw[, ID := paste(ORISPL_CODE, UNITID, sep = "-")]
+# 
+# coal.fuels <- c ("Coal", "Coal, Pipeline Natural Gas", "Coal, Natural Gas", "Coal, Other Gas",
+#                  "Coal, Coal Refuse", "Coal Refuse", "Coal, Wood" )
+# 
+# #Harvard AMPD dataset
+# 
+# # number of ORISPL Code matches with ampd_harvard dataset
+# ampd_harvard <- fread ("data/AMPD_Unit_with_Sulfur_Content_and_Regulations_with_Facility_Attributes.csv")
+# ampd_harvard<- as.data.table (ampd_harvard)
+# ampd_harvard <- ampd_harvard [ , V1 := NULL]
+# ampd_harvard<- unique( ampd_harvard, by = c ("Facility.ID..ORISPL.", "Unit.ID", "Year", "Month", "State.x"))
+# ampd_harvard <- ampd_harvard[, ID := paste(Facility.ID..ORISPL., Unit.ID, sep = "-")]
+# 
+# #ampd_coal ORISPL code matches with ampd_harvard_coal ORISPL CODE numbers (check)
+# ampd_harvard_coal <- ampd_harvard %>% filter (Year>= 1997 & Year <=2014 & Fuel1.IsCoal==1)
+# length(unique(ampd_harvard_coal$Facility.ID..ORISPL.) )
+# ampd_coal <- ampd_raw %>%  filter (year >=1997 & year <=2014 & Fuel.Type..Primary. %in% coal.fuels )
+# length(unique(ampd_coal$ORISPL_CODE))
+# 
+# length(unique(ampd_harvard_coal$Unit.ID) )
+# length(unique(ampd_coal$UNITID))
+# 
+# 
+# sum(ampd_harvard_coal$NOx..tons., na.rm = T)
+# sum(ampd_coal$NOx..tons., na.rm=T)
+# 
+# # almost same NOx emissions 59463888 vs 59456784
+# 
+# sum(ampd_harvard_coal$SO2..tons., na.rm = T)
+# sum(ampd_coal$SO2..tons., na.rm=T)
+# 
+# # almost same SO2 emissions
+# 
+# 
+# 
+# 
+# 
+# #total facilities
+# 
+# length(unique(ampd_monthly$UNITID))
+# length(unique(dfy$UNITID))
+# length(unique(facility_attributes$UNITID))
+# 
+# 
+# ####
+# length(unique(ampd_harvard$Facility.ID..ORISPL.))
+# length(unique(dfy$ORISPL_CODE))
+# length(unique(facility_attributes$ORISPL_CODE ))
+# 
+# 
+# ####
+# 
+# disperseR_units <- disperseR::units
+# 
+# length(unique(disperseR_units$ID))
+# 
+# ampd_coal <- ampd_raw %>% filter ( Fuel.Type..Primary. %in% coal.fuels)
+# 
+# length(unique(ampd_coal$ID))
+# 
+# 
+# ##plots
+# 
+# ampd_coal <- ampd_coal 
+# 
+# ampd_coal_ym<- aggregate(list (NOx..tons.=ampd_coal$NOx..tons., 
+#                           SO2..tons.=ampd_coal$SO2..tons.), by=list( year=ampd_coal$year,
+#             month=ampd_coal $month), FUN=sum)
+# ampd_coal_ym $group <- ""
+# 
 
-ampd_raw <- as.data.table(read.fst ("data/ampd_monthly_all.fst"))
-ampd_raw[, ID := paste(ORISPL_CODE, UNITID, sep = "-")]
-
-coal.fuels <- c ("Coal", "Coal, Pipeline Natural Gas", "Coal, Natural Gas", "Coal, Other Gas",
-                 "Coal, Coal Refuse", "Coal Refuse", "Coal, Wood" )
-
-#Harvard AMPD dataset
-
-# number of ORISPL Code matches with ampd_harvard dataset
-ampd_harvard <- fread ("data/AMPD_Unit_with_Sulfur_Content_and_Regulations_with_Facility_Attributes.csv")
-ampd_harvard<- as.data.table (ampd_harvard)
-ampd_harvard <- ampd_harvard [ , V1 := NULL]
-ampd_harvard<- unique( ampd_harvard, by = c ("Facility.ID..ORISPL.", "Unit.ID", "Year", "Month", "State.x"))
-ampd_harvard <- ampd_harvard[, ID := paste(Facility.ID..ORISPL., Unit.ID, sep = "-")]
-
-#ampd_coal ORISPL code matches with ampd_harvard_coal ORISPL CODE numbers (check)
-ampd_harvard_coal <- ampd_harvard %>% filter (Year>= 1997 & Year <=2014 & Fuel1.IsCoal==1)
-length(unique(ampd_harvard_coal$Facility.ID..ORISPL.) )
-ampd_coal <- ampd_raw %>%  filter (year >=1997 & year <=2014 & Fuel.Type..Primary. %in% coal.fuels )
-length(unique(ampd_coal$ORISPL_CODE))
-
-length(unique(ampd_harvard_coal$Unit.ID) )
-length(unique(ampd_coal$UNITID))
-
-
-sum(ampd_harvard_coal$NOx..tons., na.rm = T)
-sum(ampd_coal$NOx..tons., na.rm=T)
-
-# almost same NOx emissions 59463888 vs 59456784
-
-sum(ampd_harvard_coal$SO2..tons., na.rm = T)
-sum(ampd_coal$SO2..tons., na.rm=T)
-
-# almost same SO2 emissions
-
-
-
-
-
-#total facilities
-
-length(unique(ampd_monthly$UNITID))
-length(unique(dfy$UNITID))
-length(unique(facility_attributes$UNITID))
-
-
-####
-length(unique(ampd_harvard$Facility.ID..ORISPL.))
-length(unique(dfy$ORISPL_CODE))
-length(unique(facility_attributes$ORISPL_CODE ))
-
-
-####
-
-disperseR_units <- disperseR::units
-
-length(unique(disperseR_units$ID))
-
-ampd_coal <- ampd_raw %>% filter ( Fuel.Type..Primary. %in% coal.fuels)
-
-length(unique(ampd_coal$ID))
-
-
-##plots
-
-ampd_coal <- ampd_coal 
-
-ampd_coal_ym<- aggregate(list (NOx..tons.=ampd_coal$NOx..tons., 
-                          SO2..tons.=ampd_coal$SO2..tons.), by=list( year=ampd_coal$year,
-            month=ampd_coal $month), FUN=sum)
-ampd_coal_ym $group <- ""
-
-
-PP.units.monthly1995_2017
+# PP.units.monthly1995_2017
