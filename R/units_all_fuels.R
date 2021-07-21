@@ -33,7 +33,7 @@ library(fst)
 library(measurements)
 
 
-disperseR::create_dirs("/Users/munshirasel/Google Drive/R/ampd-3")
+disperseR::create_dirs("/Users/munshirasel/Google_Drive/R/ampd-raw-data-processing")
 
 url <-  "ftp://newftp.epa.gov/air/emismod/2014/v2/2014fd/emissions/2014fd_inputs_point.zip"
 directory <- proc_dir
