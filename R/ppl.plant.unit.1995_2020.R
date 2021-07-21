@@ -22,7 +22,7 @@ library(RCurl)
 library(lubridate)
 library(disperseR)
 
-setwd ("/Users/munshirasel/Google_Drive/R/ampd-3")
+setwd ("/Users/munshirasel/Google_Drive/R/ampd-raw-data-processing")
 
 
 ampd_raw <- read.fst ("data/ampd_monthly_all.fst")
@@ -58,7 +58,9 @@ DTUS <- ampd_raw [ , .(
   EPA.Region,
   NERC.Region,
   Fuel1.IsCoal,
-  Fuel2.IsCoal
+  Fuel2.IsCoal,
+  Has.SO2.Scrub,
+  Status
   
   
 )]
