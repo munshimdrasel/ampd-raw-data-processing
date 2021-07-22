@@ -23,7 +23,7 @@ library(ggpubr)
 
 
 #on local machine
-setwd ("/Users/munshirasel/Google_Drive/R/ampd-3")
+setwd ("/Users/munshirasel/Google_Drive/R/ampd-raw-data-processing")
 
 
 #on hopper cluster
