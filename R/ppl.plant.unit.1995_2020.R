@@ -32,10 +32,12 @@ ampd_raw<-as.data.table(ampd_raw)
 str(ampd_raw)
 
 DTUS <- ampd_raw [ , .(
+  Facility.Name=FACILITY_NAME,
   Facility.ID..ORISPL.=ORISPL_CODE,
   Unit.ID=UNITID,
   Year=year,
   Month= month,
+  Program.s.,
   State= STATE,
   County=County,
   FIPS=FIPS.Code,
@@ -52,7 +54,7 @@ DTUS <- ampd_raw [ , .(
   Source.Category,
   Fuel.Type..Primary.,
   Fuel.Type..Secondary.,
-  Program.s.,
+  Operating.Status,
   SO2.Phase,
   NOx.Phase,
   EPA.Region,
@@ -159,7 +161,7 @@ monthly.updated_ym$group <- "emis_monthly_updated"
 emission_monthly_combined <- do.call("rbind", list(monthly.disperseR_ym, monthly.updated_ym))
 
 
-years <- c (2017)
+years <- c (2016)
 emission_monthly_combined%>% filter (year %in% years) %>% 
   ggplot(aes(month, NOx..tons., group= group, color= group)) + geom_line() + geom_point() +
   scale_x_continuous(breaks = seq(1, 12, by = 1)) + labs(x= "month",  y = "NOx (tons)", title = "2017 monthly coal fired power plants emission comparison") 
