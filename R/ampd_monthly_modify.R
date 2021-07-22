@@ -135,31 +135,52 @@ dfy$Has.SO2.Scrub <- ifelse(dfy$SO2.Control.s. == "", 0, 1)
 
 write.fst(dfy, "data/ampd_monthly_all.fst")
 
-# ==============validating scrubber information with AMPD harvard dataset=========================
+# ==============validating SO2 scrubber information with AMPD harvard dataset=========================
+
+dfy <- read.fst ("data/ampd_monthly_all.fst")
+
 ampd_harvard <- fread ("data/AMPD_Unit_with_Sulfur_Content_and_Regulations_with_Facility_Attributes.csv")
 ampd_harvard<- as.data.table (ampd_harvard)
 ampd_harvard <- ampd_harvard [ , V1 := NULL]
 ampd_harvard<- unique( ampd_harvard, by = c ("Facility.ID..ORISPL.", "Unit.ID", "Year", "Month", "State.x"))
 ampd_harvard <- ampd_harvard[, ID := paste(Facility.ID..ORISPL., Unit.ID, sep = "-")]
 
-length(unique(dfy$ORISPL_CODE [dfy$year==2014 & dfy$Has.SO2.Scrub==1]))
-length(unique(ampd_harvard$Facility.ID..ORISPL. [ampd_harvard$Year==2014 & ampd_harvard$Has.SO2.Scrub==1]))
+length(unique(dfy$ID [dfy$year==2014 & dfy$Has.SO2.Scrub==1]))
+length(unique(ampd_harvard$ID [ampd_harvard$Year==2014 & ampd_harvard$Has.SO2.Scrub==1]))
 
-x <- unique(dfy$ORISPL_CODE [dfy$year==2014 & dfy$Has.SO2.Scrub==1])
-y <- unique(ampd_harvard$Facility.ID..ORISPL. [ampd_harvard$Year==2014 & ampd_harvard$Has.SO2.Scrub==1])
+x <- unique(dfy$ID [dfy$year==2014 & dfy$Has.SO2.Scrub==1])
+y <- unique(ampd_harvard$ID [ampd_harvard$Year==2014 & ampd_harvard$Has.SO2.Scrub==1])
 
 x %in% y
 
-#facility 883-8 has no SO2 scrubber info in AMPD harvard dataset but Has.SO2.Scrubber variable was mentioned as 1.
+x[103]
+#facility 883-7 has no SO2 scrubber info in AMPD harvard dataset but Has.SO2.Scrubber variable was mentioned as 1.
 
-dfy_883 <- dfy %>% filter (ORISPL_CODE==883 & year== 2014)
+dfy_883_7 <- dfy %>% filter (ORISPL_CODE==883 & year== 2014 & UNITID== "7")
+ampd_harvard_883_7 <- ampd_harvard %>% filter (Facility.ID..ORISPL.==883 & Unit.ID=="7" & Year==2014)
+tail(ampd_harvard_883_7,12)
 
-ampd_harvard_883 <- ampd_harvard %>% filter (Facility.ID..ORISPL.==883 & Unit.ID=="8" & Year==2014)
-tail(ampd_harvard_883,10)
+
+x[475]
+#facility-ID 7790-1-1 has no SO2 scrubber info in AMPD harvard dataset
+#Facility ID was mentioned as 1-Jan instead of 1-1 which is not right
+#facility 2832, 1004's UNIT ID name was wrong. example: "1-May", "2-May", "1-Jun", "1-Jul" etc...
+
+dfy_7790_1_1 <- dfy %>% filter (ORISPL_CODE==7790 & year== 2014 & UNITID== "1-1")
+ampd_harvard_7790_1_1 <- ampd_harvard %>% filter (Facility.ID..ORISPL.==7790  & Year==2014)
+
+
+x[297]
+
+#ID 10382-UNIT1 has no SO2 control information in ampd_harvard datasets
+dfy_10382_UNIT1 <- dfy %>% filter (ORISPL_CODE==10382 & year== 2014 & UNITID== "UNIT1")
+ampd_harvard_10382_UNIT1 <- ampd_harvard %>% filter (Facility.ID..ORISPL.==10382  & Year==2014 & Unit.ID=="UNIT1")
+tail (ampd_harvard_10382_UNIT1$SO2.Control.s.)
+
+
+# =============================================================================================
 
 #trying operating status
-
-
 dfy <- dfy %>% mutate (Status = ifelse(dfy$Operating.Status %in% c ("Retired"), "Retired",
                          ifelse(dfy$Operating.Status %in% c ("Long-term Cold Storage"), "Long-term Cold Storage",
                                 ifelse(dfy$Operating.Status %in% "Retired (Retired 01/01/1999)", "Retired", "Operating"
