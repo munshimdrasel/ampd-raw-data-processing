@@ -21,7 +21,7 @@ library(plyr)
 library(RCurl)
 library(lubridate)
 
-setwd ("/Users/munshirasel/Google_Drive/R/ampd-3")
+setwd ("/Users/munshirasel/Google_Drive/R/ampd-raw-data-processing")
 
 df <- read.fst ("data/emissions-raw.fst")
 
@@ -37,7 +37,7 @@ head(df)
 #separating dates in different columns
 df<- df %>% mutate(date = mdy(OP_DATE)) %>% mutate_at(vars(date), funs(year, month, day))
 
-#merging two columns (SO2_Mass (not sure about unit guesing as tons)+ SO2_Mass..tons); similarly others
+#merging two columns (SO2_Mass (not sure about unit guessing as tons)+ SO2_Mass..tons); similarly others
 
 #Dataset were divided under different columns  after certain years
 
