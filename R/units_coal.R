@@ -32,7 +32,7 @@ library(fst)
 library(measurements)
 
 # create directory
-disperseR::create_dirs("/Users/munshirasel/Google_Drive/R/ampd-3")
+disperseR::create_dirs("/Users/munshirasel/Google_Drive/R/ampd-raw-data-processing")
 
 #read ampd data
 
@@ -257,8 +257,6 @@ ggplot() + geom_point(data= units_combined, aes( year, SOx,color= group, group= 
   geom_line (data= units_combined, aes( year, SOx,color= group, group= group)) +
   scale_x_continuous(breaks = seq(1995, 2021, by = 2))  +
   labs(x= "Year",   y = "SO2 Emission (tons)", title = "Yearly coal fired power plants emission comparison") 
-
-
 
 
 
