@@ -3,9 +3,6 @@
 
 #Harvard data downloading website: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/E0FLPT
 
-
-
-
 library(ncdf4)
 library(data.table)
 library(tidyverse)
@@ -26,7 +23,7 @@ library(RCurl)
 library(lubridate)
 library(ggpubr)
 
-setwd ("/Users/munshirasel/Google Drive/R/ampd-3")
+setwd ("/Users/munshirasel/Google_Drive/R/ampd-raw-data-processing")
 
 
 ampd_raw <- read.fst ("data/ampd_monthly.fst")
